@@ -77,7 +77,46 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
 
 
 
-    // Implement more methods for order processing, etc.
+    @Override
+    public boolean addToCart(CartDTO cart) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "INSERT INTO carts (product_id, product_quantity, user_id, order_date_time) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, cart.getProduct_id());
+                preparedStatement.setInt(2, cart.getProduct_quantity());
+                preparedStatement.setInt(3, cart.getUser_id());
+                preparedStatement.setObject(4, cart.getOrder_date_time());
+
+                int rowsAffected = preparedStatement.executeUpdate();
+
+                // Return true if insertion is successful
+                return rowsAffected > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the SQLException or log it
+            return false; // Return false if insertion fails
+        }
+    }
+
+    @Override
+    public int getUserIdByUsername(String username) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "SELECT id FROM users WHERE username = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, username);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        return resultSet.getInt("id");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1; // Return -1 if user not found or an error occurs
+    }
 
     public static void main(String[] args) {
         try {
@@ -167,4 +206,3 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
 
 
 }
-
