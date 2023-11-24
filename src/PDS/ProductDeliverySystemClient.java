@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Scanner;
+import java.util.List;
 
 public class ProductDeliverySystemClient {
     public static void main(String[] args) {
@@ -49,10 +50,44 @@ public class ProductDeliverySystemClient {
                     // Process the login status
                     if (loginStatus) {
                         System.out.println("Login successful!");
+                        System.out.println("Welcome to Product Delivery System");
+
+                        // Display categories
+                        List<CategoryDTO> categories = pds.getCategories();
+                        System.out.println("Categories:");
+                        for (CategoryDTO category : categories) {
+
+                            System.out.println(category.getCategoryId() + ". " + category.getName());
+                        }
+
+
+                    // Get user input for category selection
+                        System.out.print("Enter the number of the category you're interested in: ");
+                        int selectedCategory = scanner.nextInt();
+                        scanner.nextLine(); // Consume the newline character
+
+                        // Display products for the selected category
+                        List<ProductDTO> products = pds.getProductsByCategory(String.valueOf(selectedCategory));
+                        if (!products.isEmpty()) {
+                            System.out.println("Products for the selected category:");
+                            for (ProductDTO product : products) {
+                                System.out.println("Product ID: " + product.getProductId());
+                                System.out.println("Product Name: " + product.getProductName());
+                                System.out.println("Description: " + product.getDescription());
+                                System.out.println("Price: " + product.getPrice());
+                                System.out.println("Quantity Available: " + product.getAvailable());
+                                System.out.println("------------------------------");
+                            }
+
+                        } else {
+                            System.out.println("No products available for the selected category.");
+                        }
                     } else {
                         System.out.println("Login failed. Please check your username and password.");
                     }
                     break;
+
+
                 case 2:
                     // Implement sign-up logic here
 
@@ -124,4 +159,5 @@ public class ProductDeliverySystemClient {
             scanner.close();
         }
     }
+
 }

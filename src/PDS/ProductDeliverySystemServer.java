@@ -3,6 +3,8 @@ import PDS.ProductDeliverySystem;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class ProductDeliverySystemServer extends UnicastRemoteObject implements ProductDeliverySystem {
@@ -47,7 +49,6 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
             return false; // Return false if registration fails
         }
     }
-
 
 
 
@@ -109,5 +110,61 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
             return false; // Return false if an exception occurs
         }
     }
+
+
+    @Override
+    public List<CategoryDTO> getCategories() throws RemoteException {
+        List<CategoryDTO> categories = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "SELECT * FROM categories";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        CategoryDTO category = new CategoryDTO();
+                        category.setCategoryId(resultSet.getInt("category_id"));
+                        category.setName(resultSet.getString("category_name"));
+                        categories.add(category);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return categories;
+    }
+
+
+    @Override
+    public List<ProductDTO> getProductsByCategory(String category) throws RemoteException {
+        List<ProductDTO> products = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "SELECT * FROM products WHERE category_id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, category);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        ProductDTO product = new ProductDTO();
+                        product.setProductId(resultSet.getInt("product_id"));
+                        product.setProductName(resultSet.getString("product_name"));
+                        product.setDescription(resultSet.getString("description"));
+                        product.setPrice(resultSet.getDouble("price"));
+                        product.setAvailable(resultSet.getInt("quantity_available"));
+                        products.add(product);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return products;
+    }
+
+
+
 }
 

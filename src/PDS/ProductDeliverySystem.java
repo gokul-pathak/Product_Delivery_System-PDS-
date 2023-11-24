@@ -1,7 +1,10 @@
 package PDS;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 
 public interface ProductDeliverySystem extends Remote {
     // Define remote methods here
@@ -18,5 +21,14 @@ public interface ProductDeliverySystem extends Remote {
     boolean loginUser(UserInfoDTO userInfo) throws RemoteException;
 
     boolean isUsernameTaken(UserInfoDTO userInfo) throws RemoteException;
+
+    //List<String> getCategories() throws RemoteException;
+    //List<ProductDTO> getProductsByCategory(String category) throws RemoteException;
+
+    List<CategoryDTO> getCategories() throws RemoteException;
+
+    List<ProductDTO> getProductsByCategory(String category) throws RemoteException;
+
+
 
 }
