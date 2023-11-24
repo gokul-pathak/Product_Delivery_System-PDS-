@@ -1,9 +1,11 @@
 package PDS;
-
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class ProductDeliverySystemClient {
@@ -37,8 +39,12 @@ public class ProductDeliverySystemClient {
                     System.out.println("Enter your password:");
                     String loginPassword = scanner.nextLine();
 
+                    UserInfoDTO loginInfo = new UserInfoDTO();
+                    loginInfo.setUsername(loginUsername);
+                    loginInfo.setPassword(loginPassword);
+
                     // Call the remote method for user login
-                    boolean loginStatus = pds.loginUser(loginUsername, loginPassword);
+                    boolean loginStatus = pds.loginUser(loginInfo);
 
                     // Process the login status
                     if (loginStatus) {
@@ -48,32 +54,61 @@ public class ProductDeliverySystemClient {
                     }
                     break;
                 case 2:
-                    // Implement sign up logic here
-                    System.out.println("Sign Up");
-                    System.out.println("Enter your first name:");
-                    String firstName = scanner.nextLine();
-                    System.out.println("Enter your last name:");
-                    String lastName = scanner.nextLine();
-                    System.out.println("Enter your email address:");
-                    String email = scanner.nextLine();
-                    System.out.println("Enter your contact number:");
-                    String phone = scanner.nextLine();
-                    System.out.println("Enter your address:");
-                    String address = scanner.nextLine();
-                    System.out.println("Enter your desired username:");
-                    String username = scanner.nextLine();
-                    System.out.println("Enter your password:");
-                    String password = scanner.nextLine();
+                    // Implement sign-up logic here
 
-                    // Call the remote method for account registration
-                    boolean registrationStatus = pds.registerAccount(firstName, lastName, email, phone, address, username, password);
+                    boolean usernameTaken;
+                    try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/dcoms_test", "root", "")) {
+                        do {
+                            System.out.println("Sign Up");
+                            System.out.println("Enter your desired username:");
+                            String username = scanner.nextLine();
 
-                    // Process the registration status
-                    if (registrationStatus) {
-                        System.out.println("Account registered successfully!");
-                    } else {
-                        System.out.println("Registration failed. Please try again with a different username.");
+                            UserInfoDTO signUpInfo = new UserInfoDTO();
+                            signUpInfo.setUsername(username);
+
+                            // Check if the username already exists
+                            usernameTaken = pds.isUsernameTaken(signUpInfo);
+
+                            if (usernameTaken) {
+                                System.out.println("Username already exists. Please choose a different username.");
+                            } else {
+                                // Continue with other user details
+                                System.out.println("Enter your first name:");
+                                String firstName = scanner.nextLine();
+                                System.out.println("Enter your last name:");
+                                String lastName = scanner.nextLine();
+                                System.out.println("Enter your email address:");
+                                String email = scanner.nextLine();
+                                System.out.println("Enter your contact number:");
+                                String phone = scanner.nextLine();
+                                System.out.println("Enter your address:");
+                                String address = scanner.nextLine();
+                                System.out.println("Enter your password:");
+                                String password = scanner.nextLine();
+
+                                signUpInfo.setFirstName(firstName);
+                                signUpInfo.setLastName(lastName);
+                                signUpInfo.setEmail(email);
+                                signUpInfo.setPhone(phone);
+                                signUpInfo.setAddress(address);
+                                signUpInfo.setPassword(password);
+
+                                // Call the remote method for account registration
+                                boolean registrationStatus = pds.registerAccount(signUpInfo);
+
+                                // Process the registration status
+                                if (registrationStatus) {
+                                    System.out.println("Account registered successfully!");
+                                } else {
+                                    System.out.println("Registration failed. Please try again.");
+                                }
+                            }
+                        } while (usernameTaken);
+                    } catch (SQLException e) {
+                        throw new RuntimeException("Error connecting to the database", e);
                     }
+
+
                     break;
                 case 3:
                     System.out.println("Exiting the system. Goodbye!");
