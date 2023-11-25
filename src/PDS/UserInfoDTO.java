@@ -1,7 +1,12 @@
 package PDS;
 import java.io.Serializable;
+import java.rmi.RemoteException;
+import java.util.Scanner;
+
 
 public class UserInfoDTO implements Serializable {
+
+    private static final long serialVersionUID = 5974191834878891739L;
     private String firstName;
     private String lastName;
     private String email;
@@ -86,5 +91,116 @@ public class UserInfoDTO implements Serializable {
         return password;
     }
 
-    // Other methods...
+    public static void userRegister(ProductDeliverySystem pds) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
+        boolean usernameTaken;
+        do {
+            System.out.println("Sign Up");
+            System.out.println("Enter your desired username:");
+            String username = scanner.nextLine();
+
+            UserInfoDTO signUpInfo = new UserInfoDTO();
+            signUpInfo.setUsername(username);
+
+            // Check if the username already exists
+            usernameTaken = pds.isUsernameTaken(signUpInfo);
+
+            if (usernameTaken) {
+                System.out.println("Username already exists. Please choose a different username.\n");
+            } else {
+                // Continue with other user details
+                System.out.println("Enter your first name:");
+                String firstName = scanner.nextLine();
+                System.out.println("Enter your last name:");
+                String lastName = scanner.nextLine();
+                System.out.println("Enter your email address:");
+                String email = scanner.nextLine();
+                System.out.println("Enter your contact number:");
+                String phone = scanner.nextLine();
+                System.out.println("Enter your address:");
+                String address = scanner.nextLine();
+                System.out.println("Enter your password:");
+                String password = scanner.nextLine();
+
+                signUpInfo.setFirstName(firstName);
+                signUpInfo.setLastName(lastName);
+                signUpInfo.setEmail(email);
+                signUpInfo.setPhone(phone);
+                signUpInfo.setAddress(address);
+                signUpInfo.setPassword(password);
+
+                // Call the remote method for account registration
+                boolean registrationStatus = pds.registerAccount(signUpInfo);
+
+                // Process the registration status
+                if (registrationStatus) {
+                    System.out.println("Account registered successfully!");
+                    System.out.println("Redirecting to Login Page!");
+                    Additonal.timer();
+                    userLogin(pds);
+                } else {
+                    System.out.println("Registration failed. Please try again.");
+                }
+            }
+        } while (usernameTaken);
+    }
+
+    public static void userLogin(ProductDeliverySystem pds) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
+        int maxLoginAttempts = 3;
+        int loginAttempts = 0;
+
+        while (loginAttempts < maxLoginAttempts) {
+            // Login logic
+            Additonal.clearConsole();
+            System.out.println("Log In");
+            System.out.println("Enter your username:");
+            String loginUsername = scanner.nextLine();
+            System.out.println("Enter your password:");
+            String loginPassword = scanner.nextLine();
+
+            UserInfoDTO loginInfo = new UserInfoDTO();
+            loginInfo.setUsername(loginUsername);
+            loginInfo.setPassword(loginPassword);
+
+            // Call the remote method for user login
+            boolean loginStatus = pds.loginUser(loginInfo);
+
+
+            // Process the login status
+            if (loginStatus) {
+                int userId = pds.getUserIdByUsername(loginUsername);
+                if (userId != -1) {
+                    System.out.println("User ID:" + userId);
+                }
+
+                System.out.println("Login successful!");
+                System.out.println("Welcome to Product Delivery System");
+
+                // Display categories
+                CategoryDTO.selectCategory(pds, userId);
+
+                // Display products and Add Cart for the selected category
+
+
+            } else {
+                System.out.println("Login failed. Please check your username and password.");
+                loginAttempts++;
+
+                if (loginAttempts < maxLoginAttempts) {
+                    System.out.println("Remaining attempts: " + (maxLoginAttempts - loginAttempts));
+                    System.out.println("Do you want to try again? (yes/no)");
+                    String tryAgainChoice = scanner.nextLine().toLowerCase();
+
+                    if (!"yes".equals(tryAgainChoice)) {
+                        System.out.println("Exiting program.");
+                        break;
+                    }
+                } else {
+                    System.out.println("Maximum login attempts reached. Exiting program.");
+                    break;
+                }
+            }
+        }
+    }
 }
