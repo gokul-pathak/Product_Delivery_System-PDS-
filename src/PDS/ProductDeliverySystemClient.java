@@ -1,4 +1,5 @@
 package PDS;
+
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -9,6 +10,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Scanner;
 import java.util.List;
+
 import PDS.CartDTO;
 
 
@@ -36,119 +38,153 @@ public class ProductDeliverySystemClient {
 
             switch (choice) {
                 case 1:
-                    // Implement login logic here
-                    System.out.println("Log In");
-                    System.out.println("Enter your username:");
-                    String loginUsername = scanner.nextLine();
-                    System.out.println("Enter your password:");
-                    String loginPassword = scanner.nextLine();
+                    int maxLoginAttempts = 3;
+                    int loginAttempts = 0;
 
-                    UserInfoDTO loginInfo = new UserInfoDTO();
-                    loginInfo.setUsername(loginUsername);
-                    loginInfo.setPassword(loginPassword);
+                    while (loginAttempts < maxLoginAttempts) {
+                        // Login logic
+                        clearConsole();
+                        System.out.println("Log In");
+                        System.out.println("Enter your username:");
+                        String loginUsername = scanner.nextLine();
+                        System.out.println("Enter your password:");
+                        String loginPassword = scanner.nextLine();
 
-                    // Call the remote method for user login
-                    boolean loginStatus = pds.loginUser(loginInfo);
+                        UserInfoDTO loginInfo = new UserInfoDTO();
+                        loginInfo.setUsername(loginUsername);
+                        loginInfo.setPassword(loginPassword);
 
-
-                    // Process the login status
-                    if (loginStatus) {
-                        int userId = pds.getUserIdByUsername(loginUsername);
-                        if (userId != -1)
-                        {
-                            System.out.println(""+userId);
-                        }
-
-                        System.out.println("Login successful!");
-                        System.out.println("Welcome to Product Delivery System");
-
-                        // Display categories
-                        List<CategoryDTO> categories = pds.getCategories();
-                        System.out.println("Categories:");
-                        for (CategoryDTO category : categories) {
-
-                            System.out.println(category.getCategoryId() + ". " + category.getName());
-                        }
+                        // Call the remote method for user login
+                        boolean loginStatus = pds.loginUser(loginInfo);
 
 
-                        // Get user input for category selection
-                        System.out.print("Enter the number of the category you're interested in: ");
-                        int selectedCategory = scanner.nextInt();
-                        scanner.nextLine(); // Consume the newline character
-
-                        // Display products for the selected category
-                        List<ProductDTO> products = pds.getProductsByCategory(String.valueOf(selectedCategory));
-                        if (!products.isEmpty()) {
-                            System.out.println("Products for the selected category:");
-
-                            // Display header
-                            System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", "Product ID", "Product Name", "Description", "Price", "Quantity Available");
-                            System.out.println("--------------------------------------------------------------------------------------------");
-
-                            // Display products in a tabular format
-                            for (ProductDTO product : products) {
-                                System.out.printf("%-15s %-25s %-40s %-10s %-20s%n",
-                                        product.getProductId(), product.getProductName(), product.getDescription(),
-                                        product.getPrice(), product.getAvailable());
+                        // Process the login status
+                        if (loginStatus) {
+                            int userId = pds.getUserIdByUsername(loginUsername);
+                            if (userId != -1) {
+                                System.out.println("User ID:" + userId);
                             }
 
-                            // Prompt user to add a product to the cart
-                            System.out.println("\nEnter the number of the product you want to add to the cart (or enter 0 to go back):");
-                            int selectedProductId = scanner.nextInt();
-                            scanner.nextLine(); // Consume the newline character
+                            System.out.println("Login successful!");
+                            System.out.println("Welcome to Product Delivery System");
 
-                            if (selectedProductId != 0) {
-                                // Check if the selected product ID is valid
-                                ProductDTO selectedProduct = products.stream()
-                                        .filter(product -> product.getProductId() == selectedProductId)
-                                        .findFirst()
-                                        .orElse(null);
+                            // Display categories
+                            List<CategoryDTO> categories = pds.getCategories();
+                            System.out.println("Categories:");
+                            for (CategoryDTO category : categories) {
 
-                                if (selectedProduct != null) {
-                                    // Ask the user if they want to add the product to the cart
-                                    System.out.println("Do you want to add \"" + selectedProduct.getProductName() + "\" to the cart? (yes/no)");
-                                    String addToCartChoice = scanner.nextLine().toLowerCase();
+                                System.out.println(category.getCategoryId() + ". " + category.getName());
+                            }
 
-                                    if (addToCartChoice.equals("yes")) {
-                                        // Add the selected product to the cart (implement this logic based on your requirements)
-                                        // cart.addProduct(selectedProduct);
-                                        // Add the selected product to the cart
-                                        CartDTO cart = new CartDTO();
-                                        cart.setProduct_id(selectedProduct.getProductId());
-                                        cart.setProduct_quantity(1); // Assuming you add one quantity for simplicity
-                                        cart.setUser_id(userId); // You need to have the user ID available
-
-                                        // Get the current date and time
-                                        LocalDateTime currentDateTime = LocalDateTime.now();
-                                        cart.setOrder_date_time(currentDateTime);
-
-                                        // Call a method to insert the cart information into the database
-                                        boolean addToCartResult = pds.addToCart(cart);
-
-                                        if (addToCartResult) {
-                                            System.out.println("Product added to the cart!");
-                                        } else {
-                                            System.out.println("Failed to add the product to the cart. Please try again.");
-                                        }
-
-
-                                    } else {
-                                        System.out.println("Product not added to the cart.");
-                                    }
+//                            System.out.println("Do you want to add \"" + selectedProduct.getProductName() + "\" to the cart? (yes/no)");
+//                            ProductDTO selectedProduct = products.stream()
+//                                    .filter(product -> product.getProductId() == selectedProductId)
+//                                    .findFirst()
+//                                    .orElse(null);
+                            // Get user input for category selection
+                            int selectedCategory;
+                            while (true) {
+                                System.out.print("Enter the number of the category you're interested in: ");
+                                selectedCategory = scanner.nextInt();
+                                scanner.nextLine();
+                                if (isValidCategory(selectedCategory, categories)) {
+                                    break;
                                 } else {
-                                    System.out.println("Invalid product ID. Please try again.");
+                                    System.out.println("Invalid category. Please try again.");
                                 }
+                            }
+
+                            // Display products for the selected category
+                            List<ProductDTO> products = pds.getProductsByCategory(String.valueOf(selectedCategory));
+                            if (!products.isEmpty()) {
+                                System.out.println("Products for the selected category:");
+
+                                // Display header
+                                System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", "Product ID", "Product Name", "Description", "Price", "Quantity Available");
+                                System.out.println("--------------------------------------------------------------------------------------------");
+
+                                // Display products in a tabular format
+                                for (ProductDTO product : products) {
+                                    System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", product.getProductId(), product.getProductName(), product.getDescription(), product.getPrice(), product.getAvailable());
+                                }
+
+                                // Prompt user to add a product to the cart
+                                while (true) {
+                                    System.out.println("\nEnter the number of the product you want to add to the cart (or enter 0 to go back):");
+                                    int selectedProductId = scanner.nextInt();
+                                    scanner.nextLine(); // Consume the newline character
+
+                                    if (selectedProductId != 0) {
+                                        // Check if the selected product ID is valid
+                                        ProductDTO selectedProduct = products.stream().filter(product -> product.getProductId() == selectedProductId).findFirst().orElse(null);
+
+                                        if (selectedProduct != null) {
+
+                                            // Ask the user if they want to add the product to the cart
+                                            System.out.println("Do you want to add \"" + selectedProduct.getProductName() + "\" to the cart? (yes/no)");
+                                            String addToCartChoice = scanner.nextLine().toLowerCase();
+                                            System.out.println("Enter the product quantity:");
+                                            int cartQty = scanner.nextInt();
+
+                                            if (addToCartChoice.equals("yes")) {
+                                                // Add the selected product to the cart (implement this logic based on your requirements)
+                                                // cart.addProduct(selectedProduct);
+                                                // Add the selected product to the cart
+                                                CartDTO cart = new CartDTO();
+                                                cart.setProduct_id(selectedProduct.getProductId());
+                                                cart.setProduct_quantity(cartQty); // Assuming you add one quantity for simplicity
+                                                cart.setUser_id(userId); // You need to have the user ID available
+
+                                                // Get the current date and time
+                                                LocalDateTime currentDateTime = LocalDateTime.now();
+                                                cart.setOrder_date_time(currentDateTime);
+
+                                                // Call a method to insert the cart information into the database
+                                                boolean addToCartResult = pds.addToCart(cart);
+
+                                                if (addToCartResult) {
+                                                    System.out.println("Product added to the cart!");
+                                                    break;
+                                                } else {
+                                                    System.out.println("Failed to add the product to the cart. Please try again.");
+                                                }
+
+
+                                            } else {
+                                                System.out.println("Product not added to the cart.");
+                                            }
+                                        } else {
+                                            System.out.println("Invalid product ID. Please try again.");
+                                        }
+                                    } else {
+                                        // User chose to go back
+                                        System.out.println("Going back to the category selection.");
+                                    }
+
+                                }
+                                break;
                             } else {
-                                // User chose to go back
-                                System.out.println("Going back to the category selection.");
+                                System.out.println("No products available for the selected category.");
                             }
 
                         } else {
-                            System.out.println("No products available for the selected category.");
-                        }
+                            System.out.println("Login failed. Please check your username and password.");
+                            loginAttempts++;
 
-                    } else {
-                        System.out.println("Login failed. Please check your username and password.");
+                            if (loginAttempts < maxLoginAttempts) {
+                                System.out.println("Remaining attempts: " + (maxLoginAttempts - loginAttempts));
+                                System.out.println("Do you want to try again? (yes/no)");
+                                String tryAgainChoice = scanner.nextLine().toLowerCase();
+
+                                if (!"yes".equals(tryAgainChoice)) {
+                                    System.out.println("Exiting program.");
+                                    break;
+                                }
+                            } else {
+                                System.out.println("Maximum login attempts reached. Exiting program.");
+                                break;
+                            }
+                        }
                     }
                     break;
 
@@ -224,5 +260,30 @@ public class ProductDeliverySystemClient {
             scanner.close();
         }
     }
+
+    private static boolean isValidCategory(int selectedCategory, List<CategoryDTO> categories) {
+        for (CategoryDTO category : categories) {
+            if (category.getCategoryId() == selectedCategory) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void clearConsole() {
+        try {
+            final String os = System.getProperty("os.name");
+            if (os.contains("Windows")) {
+//                System.out.print("\u000C");
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+            }
+        } catch (final Exception e) {
+            // Handle exceptions if necessary
+        }
+    }
+
 
 }
