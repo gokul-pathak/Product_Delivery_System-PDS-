@@ -64,7 +64,7 @@ public class CategoryDTO implements Serializable {
     }
 
     private static boolean isValidCategory(int selectedCategory, List<CategoryDTO> categories) {
-        // Implement your validation logic here
+        // validation logic
         return selectedCategory >= 1 && selectedCategory <= categories.size();
     }
 }

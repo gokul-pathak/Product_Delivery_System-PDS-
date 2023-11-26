@@ -332,7 +332,9 @@ public class UserInfoDTO implements Serializable {
     public static void adminManageUsers(ProductDeliverySystem pds) throws RemoteException {
         Scanner scanner = new Scanner(System.in);
 
-        while (true) {
+        boolean continueEditing = true;
+
+        while (continueEditing) {
             System.out.println("\nAdmin User Management:");
             System.out.println("1. View Users");
             System.out.println("2. Delete User");
@@ -358,11 +360,19 @@ public class UserInfoDTO implements Serializable {
                     break;
                 case 4:
                     // Go Back
-                    return;  // Exit the method and go back
+                    System.out.println("Going back.");
+                    return; //
                 default:
                     System.out.println("Invalid choice. Please enter a valid option.");
+
+                    // Ask the user if they want to continue
+                    System.out.print("Do you want to continue editing users? (yes/no): ");
+                    String continueChoice = scanner.nextLine().toLowerCase();
+                    continueEditing = "yes".equals(continueChoice);
+                    break;
             }
         }
+
     }
 
     public static void viewUsers(ProductDeliverySystem pds) throws RemoteException {
@@ -402,41 +412,134 @@ public class UserInfoDTO implements Serializable {
         }
     }
 
+    private static void deleteUser(ProductDeliverySystem pds) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
 
+        // Display the user table to help the user choose a user to delete
+        displayUserTable(pds);
 
-    private static void updateUser(ProductDeliverySystem pds) throws RemoteException {
-        // Logic to update a user
-        // ...
-        System.out.println("Update User functionality to be implemented.");
-    }
+        // Ask the user to enter the user ID to delete
+        System.out.println("Enter the ID of the user you want to delete (or enter 0 to go back): ");
+        int userIdToDelete = scanner.nextInt();
 
-    public static void deleteUser(ProductDeliverySystem pds) throws RemoteException {
-        try {
-            // Display the user table and prompt the user to enter the user ID to delete
-            displayUserTable(pds);
+        if (userIdToDelete == 0) {
+            System.out.println("Going back to the main menu.");
+            return; // Exit the method and go back to the main menu
+        }
 
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("Enter the user ID to delete:");
-            int userIdToDelete = scanner.nextInt();
-            scanner.nextLine(); // Consume the newline character
+        // Confirm the deletion with the user
+        System.out.println("Are you sure you want to delete this user? (yes/no): ");
+        String confirmation = scanner.next().toLowerCase();
 
-            // Call the remote method to delete the user
-            boolean deletionStatus = pds.deleteUser(userIdToDelete);
+        if (confirmation.equals("yes")) {
+            // Call the delete user method in the server
+            boolean deletionResult = pds.deleteUser(userIdToDelete);
 
-            if (deletionStatus) {
+            if (deletionResult) {
                 System.out.println("User deleted successfully.");
             } else {
                 System.out.println("Failed to delete user.");
             }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-            // Handle RemoteException
+        } else {
+            System.out.println("User deletion canceled.");
         }
     }
 
+
     private static void displayUserTable(ProductDeliverySystem pds) throws RemoteException {
-        // Implement logic to retrieve and display the user table
-        // ...
+        List<UserInfoDTO> users = pds.getAllUsers();
+
+        if (users.isEmpty()) {
+            System.out.println("No users found.");
+        } else {
+            System.out.println("User Table:");
+            System.out.printf("%-5s %-15s %-15s %-30s %-15s %-15s %-10s%n",
+                    "ID", "First Name", "Last Name", "Email", "Phone", "Username", "Role");
+            for (UserInfoDTO user : users) {
+                System.out.printf("%-5d %-15s %-15s %-30s %-15s %-15s %-10d%n",
+                        user.getId(), user.getFirstName(), user.getLastName(),
+                        user.getEmail(), user.getPhone(), user.getUsername(), user.getRole());
+            }
+        }
     }
+
+
+    private static void updateUser(ProductDeliverySystem pds) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
+
+        // Display the user table
+        displayUserTable(pds);
+
+        // Prompt the user to enter the ID of the user they want to edit
+        System.out.print("Enter the ID of the user you want to edit (or enter 0 to go back): ");
+        int userIdToEdit = scanner.nextInt();
+        scanner.nextLine(); // Consume the newline character
+
+        if (userIdToEdit == 0) {
+            System.out.println("Going back to the main menu.");
+            return;
+        }
+
+        // Check if the user with the entered ID exists
+        UserInfoDTO userToEdit = pds.getUserInfoById(userIdToEdit);
+        if (userToEdit == null) {
+            System.out.println("User with ID " + userIdToEdit + " not found.");
+            return;
+        }
+
+        // Display the current details of the selected user
+        System.out.println("Current Details:");
+        System.out.println("ID: " + userToEdit.getId());
+        System.out.println("First Name: " + userToEdit.getFirstName());
+        System.out.println("Last Name: " + userToEdit.getLastName());
+        System.out.println("Email: " + userToEdit.getEmail());
+        System.out.println("Phone: " + userToEdit.getPhone());
+        System.out.println("Username: " + userToEdit.getUsername());
+        System.out.println("Role: " + userToEdit.getRole());
+
+        // Prompt the user for the details to edit
+        System.out.println("Enter new details (press Enter to keep the current value):");
+        System.out.print("New First Name: ");
+        String newFirstName = scanner.nextLine().trim();
+
+        System.out.print("New Last Name: ");
+        String newLastName = scanner.nextLine().trim();
+
+        System.out.print("New Email: ");
+        String newEmail = scanner.nextLine().trim();
+
+        System.out.print("New Phone: ");
+        String newPhone = scanner.nextLine().trim();
+
+        System.out.print("New Username: ");
+        String newUsername = scanner.nextLine().trim();
+
+        // Update the user details if the user entered new values
+        if (!newFirstName.isEmpty() || !newLastName.isEmpty() || !newEmail.isEmpty() ||
+                !newPhone.isEmpty() || !newUsername.isEmpty()) {
+            UserInfoDTO updatedUser = new UserInfoDTO();
+            updatedUser.setId(userToEdit.getId());
+            updatedUser.setFirstName(newFirstName.isEmpty() ? userToEdit.getFirstName() : newFirstName);
+            updatedUser.setLastName(newLastName.isEmpty() ? userToEdit.getLastName() : newLastName);
+            updatedUser.setEmail(newEmail.isEmpty() ? userToEdit.getEmail() : newEmail);
+            updatedUser.setPhone(newPhone.isEmpty() ? userToEdit.getPhone() : newPhone);
+            updatedUser.setUsername(newUsername.isEmpty() ? userToEdit.getUsername() : newUsername);
+            updatedUser.setRole(userToEdit.getRole()); // Keep the role unchanged
+
+            // Call the server method to update the user details
+            boolean updateResult = pds.updateUser(updatedUser);
+
+            if (updateResult) {
+                System.out.println("User details updated successfully.");
+            } else {
+                System.out.println("Failed to update user details.");
+            }
+        } else {
+            System.out.println("No changes made. Going back to the main menu.");
+        }
+    }
+
+
+
 
 }

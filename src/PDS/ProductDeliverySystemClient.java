@@ -36,13 +36,6 @@ public class ProductDeliverySystemClient {
                 if (userChoice == 1) {
                     UserInfoDTO.userLogin(pds);
                     break;
-                    //System.out.println("\n\nAdmin Dashboard");
-                    //System.out.println("1. Manage User");
-                    //System.out.println("2. Manage Category");
-                    //System.out.println("3. Manage Product");
-                    //System.out.println("4. Manage Order");
-
-                    //System.out.println("\n\n In Maintainence");
                 } else if (userChoice == 2) {
                     boolean choiceValid = false;
                     while (!choiceValid) {
@@ -78,7 +71,6 @@ public class ProductDeliverySystemClient {
                     System.out.println("Incorrect Choice. Please try again!!\n ");
                 }
             }
-            // Consume the newline character
 
 
         } catch (RemoteException | NotBoundException e) {

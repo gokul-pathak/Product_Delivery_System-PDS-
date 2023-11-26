@@ -10,9 +10,7 @@ public interface ProductDeliverySystem extends Remote {
 
 
 
-    // Define remote methods here
     boolean registerAccount(UserInfoDTO userInfo) throws RemoteException;
-    // Add more methods for order processing, etc.
     boolean loginUser(UserInfoDTO userInfo) throws RemoteException;
 
     boolean isUsernameTaken(UserInfoDTO userInfo) throws RemoteException;
@@ -35,4 +33,6 @@ public interface ProductDeliverySystem extends Remote {
     boolean deleteUser(int userId) throws RemoteException;
 
     UserInfoDTO getUserInfoById(int userId) throws RemoteException;
+
+    boolean updateUser(UserInfoDTO updatedUser) throws RemoteException;
 }

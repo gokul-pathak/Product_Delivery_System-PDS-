@@ -12,7 +12,6 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
     public static final String DB_USER = "root";
     public static final String DB_PASSWORD = "";
 
-    // Implement remote methods from the interface
     public ProductDeliverySystemServer() throws RemoteException {
         super();
     }
@@ -422,5 +421,34 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
             return null; // Return null if an exception occurs
         }
     }
+
+    @Override
+    public boolean updateUser(UserInfoDTO updatedUser) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            // Construct SQL query to update user details
+            String updateSql = "UPDATE users SET first_name=?, last_name=?, email=?, phone=?, username=? WHERE id=?";
+
+            try (PreparedStatement updateStatement = connection.prepareStatement(updateSql)) {
+                // Set parameters for the update query
+                updateStatement.setString(1, updatedUser.getFirstName());
+                updateStatement.setString(2, updatedUser.getLastName());
+                updateStatement.setString(3, updatedUser.getEmail());
+                updateStatement.setString(4, updatedUser.getPhone());
+                updateStatement.setString(5, updatedUser.getUsername());
+                updateStatement.setInt(6, updatedUser.getId());
+
+                // Execute the update query
+                int rowsAffected = updateStatement.executeUpdate();
+
+                // Return true if the update is successful (rowsAffected > 0), false otherwise
+                return rowsAffected > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle the exception or log it
+            return false; // Return false if the update fails
+        }
+    }
+
 
 }
