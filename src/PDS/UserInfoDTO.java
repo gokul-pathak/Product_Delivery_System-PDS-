@@ -232,6 +232,7 @@ public class UserInfoDTO implements Serializable {
                     break;
                 default:
                     System.out.println("Invalid choice. Please enter a valid option.");
+                    break;
             }
         }
     }
