@@ -167,4 +167,88 @@ public class ProductDTO implements Serializable {
             System.out.println("No products available for the selected category.");
         }
     }
+
+    public static void selectAddCart(ProductDeliverySystem pds, int userId) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
+        List<ProductDTO> products = pds.getAllProducts();
+        if (!products.isEmpty()) {
+            System.out.println("All Products:");
+            // Prompt user to add a product to the cart
+            while (true) {
+
+                // Display header
+                System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", "Product ID", "Product Name", "Description", "Price", "Quantity Available");
+                System.out.println("-----------------------------------------------------------------------------------------------------------------");
+
+                // Display products in a tabular format
+                for (ProductDTO product : products) {
+                    System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", product.getProductId(), product.getProductName(), product.getDescription(), product.getPrice(), product.getAvailable());
+                }
+                System.out.println("\nEnter the number of the product you want to add to the cart (or enter 0 to go back):");
+                int selectedProductId = scanner.nextInt();
+                scanner.nextLine(); // Consume the newline character
+
+                if (selectedProductId != 0) {
+                    // Check if the selected product ID is valid
+                    ProductDTO selectedProduct = products.stream().filter(product -> product.getProductId() == selectedProductId).findFirst().orElse(null);
+
+                    if (selectedProduct != null) {
+
+                        // Ask the user if they want to add the product to the cart
+                        System.out.println("Do you want to add \"" + selectedProduct.getProductName() + "\" to the cart? (yes/no)");
+                        String addToCartChoice = scanner.nextLine().toLowerCase();
+
+
+                        if (addToCartChoice.equals("yes")) {
+                            System.out.println("Enter the product quantity:");
+                            int cartQty = scanner.nextInt();
+                            CartDTO cart = new CartDTO();
+                            cart.setProduct_id(selectedProduct.getProductId());
+                            cart.setProduct_quantity(cartQty); // Assuming you add one quantity for simplicity
+                            cart.setUser_id(userId); // You need to have the user ID available
+
+                            // Get the current date and time
+                            LocalDateTime currentDateTime = LocalDateTime.now();
+                            cart.setOrder_date_time(currentDateTime);
+
+                            // Call a method to insert the cart information into the database
+                            boolean addToCartResult = pds.addToCart(cart);
+
+                            if (addToCartResult) {
+                                System.out.println("\nProduct added to the cart!\n");
+                                System.out.println("Do you want to add more Product? (yes/no)");
+                                String addProductChoice = scanner.nextLine().toLowerCase();
+                                if (addProductChoice.equals("yes")){
+                                    break;
+                                }else{
+                                    System.out.println("Exiting the Product Delivery System. Thank you!");
+                                    Additonal.timer();
+                                    System.exit(0);
+                                }
+
+                            } else {
+                                System.out.println("Failed to add the product to the cart. Please try again.\n\n");
+                            }
+
+
+                        } else {
+                            System.out.println("Redirecting to Product List in ");
+                            Additonal.timer();
+                        }
+                    } else {
+                        System.out.println("Invalid product ID. Please try again in ");
+                        Additonal.timer();
+                    }
+                } else {
+                    // User chose to go back
+                    System.out.println("Going back to the category selection in");
+                    Additonal.timer();
+                    CategoryDTO.selectCategory(pds, userId);
+                }
+
+            }
+        } else {
+            System.out.println("No products available for the selected category.");
+        }
+    }
 }

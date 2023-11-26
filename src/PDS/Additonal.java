@@ -27,4 +27,10 @@ public class Additonal {
         }
     }
 
+    public static void randomSpace(){
+        for (int i=10; i>0; i--){
+            System.out.print("\n");
+        }
+    }
+
 }

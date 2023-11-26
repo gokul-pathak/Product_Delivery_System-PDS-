@@ -7,12 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface ProductDeliverySystem extends Remote {
-    // Define remote methods here
-    //boolean registerAccount(String firstName, String lastName, String email, String phone, String address, String username, String password) throws RemoteException;
-    // Add more methods for order processing, etc.
-    //boolean loginUser(String username, String password) throws RemoteException;
 
-    //boolean isUsernameTaken(Connection connection, String username) throws RemoteException;
 
 
     // Define remote methods here
@@ -27,6 +22,7 @@ public interface ProductDeliverySystem extends Remote {
 
     List<CategoryDTO> getCategories() throws RemoteException;
 
+    List<ProductDTO> getAllProducts() throws RemoteException;
     List<ProductDTO> getProductsByCategory(String category) throws RemoteException;
 
 

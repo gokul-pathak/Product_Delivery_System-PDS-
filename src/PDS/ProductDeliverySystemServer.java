@@ -12,6 +12,7 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
     public static final String DB_URL = "jdbc:mysql://localhost:3306/dcoms_test";
     public static final String DB_USER = "root";
     public static final String DB_PASSWORD = "";
+
     // Implement remote methods from the interface
     public ProductDeliverySystemServer() throws RemoteException {
         super();
@@ -51,8 +52,6 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
     }
 
 
-
-
     // Helper method to check if a username is already taken
 
     @Override
@@ -73,8 +72,6 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
             return false; // Return false if an exception occurs
         }
     }
-
-
 
 
     @Override
@@ -132,6 +129,7 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
             // Close any resources if needed
         }
     }
+
     @Override
     public boolean loginUser(UserInfoDTO userInfo) throws RemoteException {
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
@@ -152,12 +150,38 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
 
 
     @Override
+    public List<ProductDTO> getAllProducts() throws RemoteException {
+        List<ProductDTO> products = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String query = "SELECT * FROM products";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        ProductDTO product = new ProductDTO();
+                        product.setProductId(resultSet.getInt("product_id"));
+                        product.setProductName(resultSet.getString("product_name"));
+                        product.setDescription(resultSet.getString("description"));
+                        product.setPrice(resultSet.getDouble("price"));
+                        product.setAvailable(resultSet.getInt("quantity_available"));
+                        products.add(product);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return products;
+    }
+
+
+    @Override
     public List<CategoryDTO> getCategories() throws RemoteException {
         List<CategoryDTO> categories = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            String sql = "SELECT * FROM categories";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            String query = "SELECT * FROM categories";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         CategoryDTO category = new CategoryDTO();
@@ -180,8 +204,8 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
         List<ProductDTO> products = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            String sql = "SELECT * FROM products WHERE category_id = ?";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            String query = "SELECT * FROM products WHERE category_id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setString(1, category);
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
