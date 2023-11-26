@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 26, 2023 at 09:20 AM
+-- Generation Time: Nov 26, 2023 at 03:14 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -72,6 +72,31 @@ INSERT INTO `categories` (`category_id`, `category_name`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `deleted_users`
+--
+
+CREATE TABLE `deleted_users` (
+  `user_id` int(11) NOT NULL,
+  `first_name` varchar(255) DEFAULT NULL,
+  `last_name` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `username` varchar(50) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `role` tinyint(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `deleted_users`
+--
+
+INSERT INTO `deleted_users` (`user_id`, `first_name`, `last_name`, `email`, `phone`, `address`, `username`, `password`, `role`) VALUES
+(2, 'pathak', 'gp', 'pg', 'pg@gp.com', '888888', 'np', 'api', 1);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `products`
 --
 
@@ -113,22 +138,20 @@ CREATE TABLE `users` (
   `phone` varchar(20) DEFAULT NULL,
   `address` varchar(255) DEFAULT NULL,
   `username` varchar(50) DEFAULT NULL,
-  `password` varchar(255) DEFAULT NULL
+  `password` varchar(255) DEFAULT NULL,
+  `role` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `phone`, `address`, `username`, `password`) VALUES
-(1, 'g', 'p', 'g@p.com', '98477', 'pokhara', 'gokul', 'test'),
-(2, 'gp', 'pg', 'pg@gp.com', '888888', 'np', 'pathak', 'api'),
-(3, 'gokul', 'pathak', 'gokul@gmail.com', '98777777', 'baglung', 'bgl_gokul', 'testy'),
-(4, 'gokul', 'pathak', 'goku@gmail.com', '984680000', 'pokhara', 'pathak1', 'test123'),
-(5, 'Suraj', 'Adhikari', 'sssadhikari222@gmail.com', '9867808207', 'Rupalake', 'suraj', 'suraj123'),
-(6, 'suraj', 'adhikari', 'surajadhikari0018@gmail.com', '9806797075', 'Rupalake', 'sura', 'suraj123'),
-(7, 'suraj', 'adhikari', 'surajadhikari2102it.infomaxcollege@edu.np', '9804188295', 'Rupalake', 'sur', 'suraj123'),
-(8, 'suraj', 'adhikari', 'sss@gmail.com', '9800000000', 'rupalake', 'su', 'suraj123');
+INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `phone`, `address`, `username`, `password`, `role`) VALUES
+(1, 'Gokul', 'Pathak', 'gokul@gmail.com', '984766899', 'pokhara', 'gokul', 'test', 1),
+(4, 'gokul', 'pathak', 'goku@gmail.com', '984680000', 'pokhara', 'pathak1', 'test123', 1),
+(5, 'Suraj', 'Adhikari', 'sssadhikari222@gmail.com', '9867808207', 'Rupalake', 'suraj', 'suraj123', 1),
+(8, 'suraj', 'adhikari', 'sss@gmail.com', '9800000000', 'rupalake', 'su', 'suraj123', 1),
+(9, 'pdsadmin', 'admin', 'admin@pds.com', '06852048', 'pkr np', 'pds-admin', 'pdspsw', 0);
 
 --
 -- Indexes for dumped tables
@@ -147,6 +170,12 @@ ALTER TABLE `carts`
 --
 ALTER TABLE `categories`
   ADD PRIMARY KEY (`category_id`);
+
+--
+-- Indexes for table `deleted_users`
+--
+ALTER TABLE `deleted_users`
+  ADD PRIMARY KEY (`user_id`);
 
 --
 -- Indexes for table `products`
@@ -187,7 +216,7 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Constraints for dumped tables
