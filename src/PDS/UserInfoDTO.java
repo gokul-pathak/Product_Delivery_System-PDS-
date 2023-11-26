@@ -1,6 +1,7 @@
 package PDS;
 import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -14,6 +15,27 @@ public class UserInfoDTO implements Serializable {
     private String address;
     private String username;
     private String password;
+    private int id;
+    private int role;
+
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public int getRole() {
+        return role;
+    }
+
+    public void setRole(int role) {
+        this.role = role;
+    }
+
+
 
     // Constructors
 
@@ -164,19 +186,37 @@ public class UserInfoDTO implements Serializable {
             loginInfo.setPassword(loginPassword);
 
             boolean loginStatus = pds.loginUser(loginInfo);
+            System.out.println("Login Status: " + loginStatus);
+
 
 
             // Process the login
             if (loginStatus) {
+
                 int userId = pds.getUserIdByUsername(loginUsername);
                 if (userId != -1) {
                     System.out.println("User ID:" + userId);
+                    int role = pds.getUserRole(userId);
+                    if (role == 0) {
+                        System.out.println("Admin login successful!");
+                        // Add admin-specific functionality here
+                        System.out.println("Redirecting user page in ");
+                        Additonal.timer();
+                        adminHomePage(pds,userId);
+
+                    } else if (role == 1) {
+                        System.out.println("Normal user login successful!");
+                        // Redirect to normal user home page
+                        System.out.println("Redirecting user page in ");
+                        Additonal.timer();
+                        userHomePage(pds, userId);
+                    } else {
+                        System.out.println("Unknown user role. Exiting program.");
+                        break;
+                    }
+
                 }
 
-                System.out.println("Login successful!");
-                System.out.println("Redirecting user page in ");
-                Additonal.timer();
-                userHomePage(pds, userId);
 
             } else {
                 System.out.println("Login failed. Please check your username and password.");
@@ -208,6 +248,7 @@ public class UserInfoDTO implements Serializable {
             System.out.println("2. View All Product");
             System.out.println("3. View Cart");
             System.out.println("4. View/Track Order");
+            System.out.println("5. Exit");
             System.out.print("Enter your choice: ");
             int choice = scanner.nextInt();
             scanner.nextLine();
@@ -230,10 +271,172 @@ public class UserInfoDTO implements Serializable {
                 case 4:
                     choiceValid = true;
                     break;
+                case 5:
+                    System.out.println("Exiting user panel.");
+                    break;
                 default:
                     System.out.println("Invalid choice. Please enter a valid option.");
                     break;
             }
         }
     }
+    public static void adminHomePage(ProductDeliverySystem pds, int userId) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
+
+        // Get the user's role
+        int role = pds.getUserRole(userId);
+
+        // Display the welcome message
+        System.out.println("\n\nWelcome Admin!");
+
+        // Display admin-specific options
+        System.out.println("1. Manage Category");
+        System.out.println("2. Manage Product");
+        System.out.println("3. Manage Order");
+        System.out.println("4. Manage User");
+        System.out.println("5. Exit");
+
+        // Get user input
+        System.out.print("Enter your choice: ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();  // Consume the newline character
+
+        switch (choice) {
+            case 1:
+                // Admin-specific logic for managing categories
+                // ...
+                break;
+            case 2:
+                // Admin-specific logic for managing products
+                // ...
+                break;
+            case 3:
+                // Admin-specific logic for managing orders
+                // ...
+                break;
+            case 4:
+                //Admin-specific logic for managing users
+                //...
+                adminManageUsers(pds);
+                break;
+            case 5:
+                // Exit
+                System.out.println("Exiting admin panel.");
+                break;
+            default:
+                System.out.println("Invalid choice. Please enter a valid option.");
+                break;
+        }
+    }
+
+    public static void adminManageUsers(ProductDeliverySystem pds) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\nAdmin User Management:");
+            System.out.println("1. View Users");
+            System.out.println("2. Delete User");
+            System.out.println("3. Update User");
+            System.out.println("4. Go Back");
+            System.out.print("Enter your choice: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine();  // Consume the newline character
+
+            switch (choice) {
+                case 1:
+                    // View Users
+                    viewUsers(pds);
+                    break;
+                case 2:
+                    // Delete User
+                    deleteUser(pds);
+                    break;
+                case 3:
+                    // Update User
+                    updateUser(pds);
+                    break;
+                case 4:
+                    // Go Back
+                    return;  // Exit the method and go back
+                default:
+                    System.out.println("Invalid choice. Please enter a valid option.");
+            }
+        }
+    }
+
+    public static void viewUsers(ProductDeliverySystem pds) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\nAdmin User Management - View Users:");
+
+            // Retrieve users from the database
+            List<UserInfoDTO> users = pds.getAllUsers();
+
+            // Display users in tabular format
+            System.out.printf("%-5s %-15s %-15s %-30s %-15s %-15s %-15s\n",
+                    "ID", "First Name", "Last Name", "Email", "Phone", "Username", "Role");
+            System.out.println("-----------------------------------------------------------------------------------------------------------------");
+            for (UserInfoDTO user : users) {
+                System.out.printf("%-5s %-15s %-15s %-30s %-15s %-15s %-15s\n",
+                        user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(),
+                        user.getPhone(), user.getUsername(), user.getRole());
+            }
+
+            System.out.println("-----------------------------------------------------------------------------------------------------------------");
+
+            // Menu options
+            System.out.println("1. Go Back");
+            System.out.print("Enter your choice: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine();  // Consume the newline character
+
+            if (choice == 1) {
+                // Go Back
+                return;  // Exit the method and go back
+            } else {
+                System.out.println("Invalid choice. Please enter a valid option.");
+            }
+        }
+    }
+
+
+
+    private static void updateUser(ProductDeliverySystem pds) throws RemoteException {
+        // Logic to update a user
+        // ...
+        System.out.println("Update User functionality to be implemented.");
+    }
+
+    public static void deleteUser(ProductDeliverySystem pds) throws RemoteException {
+        try {
+            // Display the user table and prompt the user to enter the user ID to delete
+            displayUserTable(pds);
+
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Enter the user ID to delete:");
+            int userIdToDelete = scanner.nextInt();
+            scanner.nextLine(); // Consume the newline character
+
+            // Call the remote method to delete the user
+            boolean deletionStatus = pds.deleteUser(userIdToDelete);
+
+            if (deletionStatus) {
+                System.out.println("User deleted successfully.");
+            } else {
+                System.out.println("Failed to delete user.");
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            // Handle RemoteException
+        }
+    }
+
+    private static void displayUserTable(ProductDeliverySystem pds) throws RemoteException {
+        // Implement logic to retrieve and display the user table
+        // ...
+    }
+
 }

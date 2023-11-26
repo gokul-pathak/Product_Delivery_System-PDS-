@@ -28,4 +28,11 @@ public interface ProductDeliverySystem extends Remote {
     List<CartDTO> getAllCartProductsbyUserId(int userId) throws RemoteException;
     boolean addProductToCart(CartDTO cart) throws RemoteException;
     int getUserIdByUsername(String username) throws RemoteException;
+
+    int getUserRole(int userId) throws RemoteException;
+
+    List<UserInfoDTO> getAllUsers() throws RemoteException;
+    boolean deleteUser(int userId) throws RemoteException;
+
+    UserInfoDTO getUserInfoById(int userId) throws RemoteException;
 }
