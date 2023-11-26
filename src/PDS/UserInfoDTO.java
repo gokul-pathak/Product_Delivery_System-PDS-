@@ -223,7 +223,8 @@ public class UserInfoDTO implements Serializable {
                     choiceValid = true;
                     break;
                 case 3:
-                    System.out.println("System in Maintainence");
+                    Additonal.randomSpace();
+                    CartDTO.viewCartItems(pds, userId);
                     choiceValid = true;
                     break;
                 case 4:

@@ -90,7 +90,8 @@ public class ProductDTO implements Serializable {
         if (!products.isEmpty()) {
             System.out.println("Products for the selected category:");
             // Prompt user to add a product to the cart
-            while (true) {
+            boolean isTrue = false;
+            while (!isTrue) {
 
                 // Display header
                 System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", "Product ID", "Product Name", "Description", "Price", "Quantity Available");
@@ -102,7 +103,7 @@ public class ProductDTO implements Serializable {
                 }
                 System.out.println("\nEnter the number of the product you want to add to the cart (or enter 0 to go back):");
                 int selectedProductId = scanner.nextInt();
-                scanner.nextLine(); // Consume the newline character
+                scanner.nextLine();
 
                 if (selectedProductId != 0) {
                     // Check if the selected product ID is valid
@@ -116,30 +117,38 @@ public class ProductDTO implements Serializable {
 
 
                         if (addToCartChoice.equals("yes")) {
-                            System.out.println("Enter the product quantity:");
-                            int cartQty = scanner.nextInt();
+                            int cartQty;
+                            while (true) {
+                                try {
+                                    System.out.println("Enter the product quantity:");
+                                    cartQty = Integer.parseInt(scanner.nextLine());
+                                    break;
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Invalid input. Please enter a valid number.");
+                                }
+                            }
                             CartDTO cart = new CartDTO();
                             cart.setProduct_id(selectedProduct.getProductId());
-                            cart.setProduct_quantity(cartQty); // Assuming you add one quantity for simplicity
-                            cart.setUser_id(userId); // You need to have the user ID available
-
-                            // Get the current date and time
+                            cart.setProduct_quantity(cartQty);
+                            cart.setUser_id(userId);
                             LocalDateTime currentDateTime = LocalDateTime.now();
                             cart.setOrder_date_time(currentDateTime);
 
                             // Call a method to insert the cart information into the database
-                            boolean addToCartResult = pds.addToCart(cart);
+                            boolean addToCartResult = pds.addProductToCart(cart);
 
                             if (addToCartResult) {
                                 System.out.println("\nProduct added to the cart!\n");
                                 System.out.println("Do you want to add more Product? (yes/no)");
                                 String addProductChoice = scanner.nextLine().toLowerCase();
                                 if (addProductChoice.equals("yes")){
-                                    break;
-                                }else{
-                                    System.out.println("Exiting the Product Delivery System. Thank you!");
+                                    System.out.println("Redirecting to Selected Category Product List in");
                                     Additonal.timer();
-                                    System.exit(0);
+                                }else{
+                                    System.out.println("Redirecting to the Product Delivery System!");
+                                    Additonal.timer();
+                                    isTrue = true;
+                                    UserInfoDTO.userHomePage(pds, userId);
                                 }
 
                             } else {
@@ -159,6 +168,7 @@ public class ProductDTO implements Serializable {
                     // User chose to go back
                     System.out.println("Going back to the category selection in");
                     Additonal.timer();
+                    isTrue = true;
                     CategoryDTO.selectCategory(pds, userId);
                 }
 
@@ -174,7 +184,8 @@ public class ProductDTO implements Serializable {
         if (!products.isEmpty()) {
             System.out.println("All Products:");
             // Prompt user to add a product to the cart
-            while (true) {
+            boolean isTrue = false;
+            while (!isTrue) {
 
                 // Display header
                 System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", "Product ID", "Product Name", "Description", "Price", "Quantity Available");
@@ -186,44 +197,51 @@ public class ProductDTO implements Serializable {
                 }
                 System.out.println("\nEnter the number of the product you want to add to the cart (or enter 0 to go back):");
                 int selectedProductId = scanner.nextInt();
-                scanner.nextLine(); // Consume the newline character
+                scanner.nextLine();
+
 
                 if (selectedProductId != 0) {
-                    // Check if the selected product ID is valid
                     ProductDTO selectedProduct = products.stream().filter(product -> product.getProductId() == selectedProductId).findFirst().orElse(null);
 
                     if (selectedProduct != null) {
-
-                        // Ask the user if they want to add the product to the cart
                         System.out.println("Do you want to add \"" + selectedProduct.getProductName() + "\" to the cart? (yes/no)");
                         String addToCartChoice = scanner.nextLine().toLowerCase();
 
 
                         if (addToCartChoice.equals("yes")) {
-                            System.out.println("Enter the product quantity:");
-                            int cartQty = scanner.nextInt();
+                            int cartQty;
+                            while (true) {
+                                try {
+                                    System.out.println("Enter the product quantity:");
+                                    cartQty = Integer.parseInt(scanner.nextLine());
+                                    break;
+                                } catch (NumberFormatException e) {
+                                    System.out.println("Invalid input. Please enter a valid number.");
+                                }
+                            }
                             CartDTO cart = new CartDTO();
                             cart.setProduct_id(selectedProduct.getProductId());
-                            cart.setProduct_quantity(cartQty); // Assuming you add one quantity for simplicity
-                            cart.setUser_id(userId); // You need to have the user ID available
-
-                            // Get the current date and time
+                            cart.setProduct_quantity(cartQty);
+                            cart.setUser_id(userId);
                             LocalDateTime currentDateTime = LocalDateTime.now();
                             cart.setOrder_date_time(currentDateTime);
 
                             // Call a method to insert the cart information into the database
-                            boolean addToCartResult = pds.addToCart(cart);
+                            boolean addToCartResult = pds.addProductToCart(cart);
 
                             if (addToCartResult) {
                                 System.out.println("\nProduct added to the cart!\n");
                                 System.out.println("Do you want to add more Product? (yes/no)");
                                 String addProductChoice = scanner.nextLine().toLowerCase();
                                 if (addProductChoice.equals("yes")){
-                                    break;
-                                }else{
-                                    System.out.println("Exiting the Product Delivery System. Thank you!");
+                                    System.out.println("Redirecting to ALl Product List in");
                                     Additonal.timer();
-                                    System.exit(0);
+                                }else{
+                                    System.out.println("Redirecting to the Product Delivery System!");
+                                    Additonal.timer();
+                                    isTrue = true;
+                                    UserInfoDTO.userHomePage(pds, userId);
+                                    break;
                                 }
 
                             } else {
@@ -243,6 +261,7 @@ public class ProductDTO implements Serializable {
                     // User chose to go back
                     System.out.println("Going back to the Home Page in");
                     Additonal.timer();
+                    isTrue = true;
                     UserInfoDTO.userHomePage(pds, userId);
                 }
 

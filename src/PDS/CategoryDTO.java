@@ -39,8 +39,7 @@ public class CategoryDTO implements Serializable {
     }
 
     public String getName() {
-        return name;
-    }
+        return name; }
 
     public static void selectCategory(ProductDeliverySystem pds, int UserId) throws RemoteException {
         List<CategoryDTO> categories = pds.getCategories();

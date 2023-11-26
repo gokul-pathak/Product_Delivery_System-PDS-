@@ -25,7 +25,7 @@ public interface ProductDeliverySystem extends Remote {
     List<ProductDTO> getAllProducts() throws RemoteException;
     List<ProductDTO> getProductsByCategory(String category) throws RemoteException;
 
-
-    boolean addToCart(CartDTO cart) throws RemoteException;
+    List<CartDTO> getAllCartProductsbyUserId(int userId) throws RemoteException;
+    boolean addProductToCart(CartDTO cart) throws RemoteException;
     int getUserIdByUsername(String username) throws RemoteException;
 }

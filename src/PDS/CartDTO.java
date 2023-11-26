@@ -1,6 +1,9 @@
 package PDS;
 import java.io.Serializable;
+import java.rmi.RemoteException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Scanner;
 
 public class CartDTO implements Serializable {
     private int cart_id;
@@ -8,6 +11,10 @@ public class CartDTO implements Serializable {
     private int product_quantity;
     private int user_id;
     private LocalDateTime order_date_time;
+    private int productId;
+    private String productName;
+    private double price;
+    private int quantity;
 
     // Constructors
 
@@ -63,5 +70,50 @@ public class CartDTO implements Serializable {
 
     public void setOrder_date_time(LocalDateTime order_date_time) {
         this.order_date_time = order_date_time;
+    }
+
+    public static void viewCartItems(ProductDeliverySystem pds, int userId) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
+        List<CartDTO> carts = pds.getAllCartProductsbyUserId(userId);
+        if (!carts.isEmpty()) {
+            System.out.println("All Cart Products:");
+            System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", "Product ID", "Product Name", "Quantity", "Price", "Total Price");
+            System.out.println("----------------------------------------------------------------------------------------------------------");
+
+            // Display products in a tabular format
+            int SN = 1;
+            for (CartDTO cart : carts) {
+                System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", SN, cart.getProductName(), cart.getQuantity(), cart.getPrice(), (cart.getQuantity() * cart.getPrice()));
+                SN++;
+            }
+        }
+        else{
+            System.out.println("No Data in Cart!!!");
+        }
+    }
+
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public int getQuantity() {
+        return quantity;
     }
 }

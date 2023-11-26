@@ -75,28 +75,6 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
 
 
     @Override
-    public boolean addToCart(CartDTO cart) throws RemoteException {
-        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            String sql = "INSERT INTO carts (product_id, product_quantity, user_id, order_date_time) VALUES (?, ?, ?, ?)";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setInt(1, cart.getProduct_id());
-                preparedStatement.setInt(2, cart.getProduct_quantity());
-                preparedStatement.setInt(3, cart.getUser_id());
-                preparedStatement.setObject(4, cart.getOrder_date_time());
-
-                int rowsAffected = preparedStatement.executeUpdate();
-
-                // Return true if insertion is successful
-                return rowsAffected > 0;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            // Handle the SQLException or log it
-            return false; // Return false if insertion fails
-        }
-    }
-
-    @Override
     public int getUserIdByUsername(String username) throws RemoteException {
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             String sql = "SELECT id FROM users WHERE username = ?";
@@ -216,6 +194,72 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
                         product.setDescription(resultSet.getString("description"));
                         product.setPrice(resultSet.getDouble("price"));
                         product.setAvailable(resultSet.getInt("quantity_available"));
+                        products.add(product);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return products;
+    }
+    @Override
+    public boolean addProductToCart(CartDTO cart) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String querySql = "SELECT * FROM carts WHERE user_id = ? AND product_id = ?";
+            try (PreparedStatement checkStatement = connection.prepareStatement(querySql)) {
+                checkStatement.setInt(1, cart.getUser_id());
+                checkStatement.setInt(2, cart.getProduct_id());
+
+                try (ResultSet resultSet = checkStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        int existingQuantity = resultSet.getInt("product_quantity");
+                        int newQuantity = existingQuantity + cart.getProduct_quantity();
+                        String updateSql = "UPDATE carts SET product_quantity = ? WHERE user_id = ? AND product_id = ?";
+                        try (PreparedStatement updateStatement = connection.prepareStatement(updateSql)) {
+                            updateStatement.setInt(1, newQuantity);
+                            updateStatement.setInt(2, cart.getUser_id());
+                            updateStatement.setInt(3, cart.getProduct_id());
+                            int rowsAffected = updateStatement.executeUpdate();
+                            return rowsAffected > 0;
+                        }
+                    }
+                }
+            }
+            String query = "INSERT INTO carts (product_id, product_quantity, user_id, order_date_time) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setInt(1, cart.getProduct_id());
+                preparedStatement.setInt(2, cart.getProduct_quantity());
+                preparedStatement.setInt(3, cart.getUser_id());
+                preparedStatement.setObject(4, cart.getOrder_date_time());
+
+                int rowsAffected = preparedStatement.executeUpdate();
+                return rowsAffected > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public List<CartDTO> getAllCartProductsbyUserId(int userId) throws RemoteException {
+        List<CartDTO> products = new ArrayList<>();
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String query = "SELECT p.product_id, p.product_name, p.description, p.price, c.product_quantity " +
+                    "FROM carts c " +
+                    "JOIN products p ON c.product_id = p.product_id " +
+                    "WHERE c.user_id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setInt(1, userId);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        CartDTO product = new CartDTO();
+                        product.setProductName(resultSet.getString("product_name"));
+                        product.setPrice(resultSet.getDouble("price"));
+                        product.setQuantity(resultSet.getInt("product_quantity"));
                         products.add(product);
                     }
                 }
