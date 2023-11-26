@@ -241,9 +241,9 @@ public class ProductDTO implements Serializable {
                     }
                 } else {
                     // User chose to go back
-                    System.out.println("Going back to the category selection in");
+                    System.out.println("Going back to the Home Page in");
                     Additonal.timer();
-                    CategoryDTO.selectCategory(pds, userId);
+                    UserInfoDTO.userHomePage(pds, userId);
                 }
 
             }

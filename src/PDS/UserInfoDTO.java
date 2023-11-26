@@ -176,38 +176,8 @@ public class UserInfoDTO implements Serializable {
                 System.out.println("Login successful!");
                 System.out.println("Redirecting user page in ");
                 Additonal.timer();
-                boolean choiceValid = false;
-                while (!choiceValid) {
-                    System.out.println("\n\nWelcome to Product Delivery System");
-                    System.out.println("1. View Category");
-                    System.out.println("2. View All Product");
-                    System.out.println("3. View Cart");
-                    System.out.println("4. View/Track Order");
-                    System.out.print("Enter your choice: ");
-                    int choice = scanner.nextInt();
-                    scanner.nextLine();
-                    switch (choice) {
-                        case 1:
-                            Additonal.randomSpace();
-                            CategoryDTO.selectCategory(pds, userId);
-                            choiceValid = true;
-                            break;
-                        case 2:
-                            Additonal.randomSpace();
-                            ProductDTO.selectAddCart(pds, userId);
-                            choiceValid = true;
-                            break;
-                        case 3:
-                            System.out.println("System in Maintainence");
-                            choiceValid = true;
-                            break;
-                        case 4:
-                            choiceValid = true;
-                            break;
-                        default:
-                            System.out.println("Invalid choice. Please enter a valid option.");
-                    }
-                }
+                userHomePage(pds, userId);
+
             } else {
                 System.out.println("Login failed. Please check your username and password.");
                 loginAttempts++;
@@ -225,6 +195,42 @@ public class UserInfoDTO implements Serializable {
                     System.out.println("Maximum login attempts reached. Exiting program.");
                     break;
                 }
+            }
+        }
+    }
+
+    public static void userHomePage(ProductDeliverySystem pds, int userId) throws RemoteException{
+        Scanner scanner = new Scanner(System.in);
+        boolean choiceValid = false;
+        while (!choiceValid) {
+            System.out.println("\n\nWelcome to Product Delivery System");
+            System.out.println("1. View Category");
+            System.out.println("2. View All Product");
+            System.out.println("3. View Cart");
+            System.out.println("4. View/Track Order");
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+            switch (choice) {
+                case 1:
+                    Additonal.randomSpace();
+                    CategoryDTO.selectCategory(pds, userId);
+                    choiceValid = true;
+                    break;
+                case 2:
+                    Additonal.randomSpace();
+                    ProductDTO.selectAddCart(pds, userId);
+                    choiceValid = true;
+                    break;
+                case 3:
+                    System.out.println("System in Maintainence");
+                    choiceValid = true;
+                    break;
+                case 4:
+                    choiceValid = true;
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please enter a valid option.");
             }
         }
     }
