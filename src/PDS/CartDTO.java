@@ -1,4 +1,5 @@
 package PDS;
+
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.time.LocalDateTime;
@@ -76,18 +77,65 @@ public class CartDTO implements Serializable {
         Scanner scanner = new Scanner(System.in);
         List<CartDTO> carts = pds.getAllCartProductsbyUserId(userId);
         if (!carts.isEmpty()) {
-            System.out.println("All Cart Products:");
-            System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", "Product ID", "Product Name", "Quantity", "Price", "Total Price");
-            System.out.println("----------------------------------------------------------------------------------------------------------");
+            boolean choiceValid = false;
+            while (!choiceValid) {
+                System.out.println("All Cart Products:");
+                System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", "Product ID", "Product Name", "Quantity", "Price", "Total Price");
+                System.out.println("----------------------------------------------------------------------------------------------------------");
 
-            // Display products in a tabular format
-            int SN = 1;
-            for (CartDTO cart : carts) {
-                System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", SN, cart.getProductName(), cart.getQuantity(), cart.getPrice(), (cart.getQuantity() * cart.getPrice()));
-                SN++;
+                // Display products in a tabular format
+                int SN = 1;
+                for (CartDTO cart : carts) {
+                    System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", SN, cart.getProductName(), cart.getQuantity(), cart.getPrice(), (cart.getQuantity() * cart.getPrice()));
+                    SN++;
+                }
+                System.out.println("\n\nChoose Option");
+                System.out.println("1. Continue Order");
+                System.out.println("2. Back");
+                System.out.print("Enter your choice: ");
+                int choice = scanner.nextInt();
+                scanner.nextLine();
+                switch (choice) {
+                    case 1:
+                        while(true) {
+                            System.out.println("\n\nChoose Option");
+                            System.out.println("1. Cash On Delivery");
+                            System.out.println("2. Back");
+                            System.out.print("Enter your choice: ");
+                            int Orderchoice = scanner.nextInt();
+                            scanner.nextLine();
+                            if (Orderchoice == 1) {
+                                System.out.println("Processing your Order in Cash on Delivery!!");
+                                System.out.println("\nDo you want to complete the order process? (yes/no)!!");
+                                String CompleteOrderChoice = scanner.nextLine().toLowerCase();
+                                if ("yes".equals(CompleteOrderChoice)) {
+                                    System.out.println("Your Order has been Sent.");
+                                    System.out.println("Redirectly to Home Page!");
+                                    Additonal.timer();
+                                    choiceValid = true;
+                                    UserInfoDTO.userHomePage(pds, userId);
+                                    break;
+                                }else {
+                                    break;
+                                }
+                            } else if (Orderchoice == 2) {
+                                break;
+                            } else {
+                                System.out.println("Invalid Choice! Try Again");
+                            }
+                        }
+                        break;
+                    case 2:
+                        choiceValid = true;
+                        UserInfoDTO.userHomePage(pds, userId);
+                        break;
+                    default:
+                        System.out.println("Invalid Option! Try again");
+
+                }
             }
-        }
-        else{
+
+        } else {
             System.out.println("No Data in Cart!!!");
         }
     }
