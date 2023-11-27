@@ -17,6 +17,10 @@ import PDS.CartDTO;
 
 public class ProductDeliverySystemClient {
     public static void main(String[] args) {
+        startSystem();
+    }
+
+    public static void startSystem(){
         Scanner scanner = new Scanner(System.in);
 
         try {
@@ -31,6 +35,7 @@ public class ProductDeliverySystemClient {
                 System.out.println("Welcome to Product Delivery System");
                 System.out.println("1. Admin");
                 System.out.println("2. User");
+                System.out.println("3. Exit");
                 System.out.print("Enter your choice: ");
                 int userChoice = scanner.nextInt();
                 if (userChoice == 1) {
@@ -42,7 +47,7 @@ public class ProductDeliverySystemClient {
                         System.out.println("\n\nProduct Delivery System");
                         System.out.println("1. Log In");
                         System.out.println("2. Sign Up");
-                        System.out.println("3. Exit");
+                        System.out.println("3. Back");
                         System.out.print("Enter your choice: ");
                         int choice = scanner.nextInt();
                         scanner.nextLine();
@@ -60,14 +65,18 @@ public class ProductDeliverySystemClient {
                                 }
                                 break;
                             case 3:
-                                System.out.println("Exiting the system. Goodbye!");
-                                System.exit(0);
+                                startSystem();
                                 break;
                             default:
                                 System.out.println("Invalid choice. Please enter a valid option.");
                         }
                     }
-                } else {
+                }
+                else if(userChoice == 3){
+                    System.out.println("Exiting the system. Goodbye!");
+                    System.exit(0);
+                }
+                else {
                     System.out.println("Incorrect Choice. Please try again!!\n ");
                 }
             }
@@ -78,6 +87,7 @@ public class ProductDeliverySystemClient {
         } finally {
             scanner.close();
         }
+
     }
 
 

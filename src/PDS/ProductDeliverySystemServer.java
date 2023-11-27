@@ -1,9 +1,12 @@
 package PDS;
+
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class ProductDeliverySystemServer extends UnicastRemoteObject implements ProductDeliverySystem {
@@ -202,6 +205,7 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
 
         return products;
     }
+
     @Override
     public boolean addProductToCart(CartDTO cart) throws RemoteException {
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
@@ -241,6 +245,10 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
         }
     }
 
+
+
+
+
     @Override
     public int getUserRole(int userId) throws RemoteException {
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
@@ -263,8 +271,6 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
     }
 
 
-
-
     @Override
     public List<CartDTO> getAllCartProductsbyUserId(int userId) throws RemoteException {
         List<CartDTO> products = new ArrayList<>();
@@ -279,6 +285,7 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         CartDTO product = new CartDTO();
+                        product.setProductId(resultSet.getString("product_id"));
                         product.setProductName(resultSet.getString("product_name"));
                         product.setPrice(resultSet.getDouble("price"));
                         product.setQuantity(resultSet.getInt("product_quantity"));
@@ -292,6 +299,204 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
 
         return products;
     }
+    @Override
+    public boolean addUserOrder(OrderDTO order) {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            connection.setAutoCommit(false);
+
+            // Insert into orders table
+            String queryOrder = "INSERT INTO orders (user_id, order_date_time) VALUES (?, ?)";
+            try (PreparedStatement orderStatement = connection.prepareStatement(queryOrder, Statement.RETURN_GENERATED_KEYS)) {
+                orderStatement.setInt(1, order.getUser_id());
+                orderStatement.setObject(2, order.getOrder_date_time());
+
+                int rowsAffectedOrder = orderStatement.executeUpdate();
+
+                if (rowsAffectedOrder > 0) {
+                    // Get the generated order ID
+                    ResultSet generatedKeys = orderStatement.getGeneratedKeys();
+                    if (generatedKeys.next()) {
+                        int orderId = generatedKeys.getInt(1);
+
+                        // Insert into orderdetails table for each order detail
+                        String queryDetails = "INSERT INTO orderdetails (product_id, product_quantity, order_id) VALUES (?, ?, ?)";
+                        try (PreparedStatement detailsStatement = connection.prepareStatement(queryDetails)) {
+                            for (OrderDTO orderDetail : order.getOrderDetailsList()) {
+                                detailsStatement.setInt(1, orderDetail.getProduct_id());
+                                detailsStatement.setInt(2, orderDetail.getProduct_quantity());
+                                detailsStatement.setInt(3, orderId);
+
+                                int rowsAffectedDetails = detailsStatement.executeUpdate();
+
+                                if (rowsAffectedDetails <= 0) {
+                                    connection.rollback();
+                                    return false;
+                                }
+                            }
+
+                            // Delete from carts table
+                            String cartDeleteQuery = "DELETE FROM carts WHERE product_id = ? AND user_id = ?";
+                            try (PreparedStatement cartDeleteStatement = connection.prepareStatement(cartDeleteQuery)) {
+                                for (OrderDTO orderDetail : order.getOrderDetailsList()) {
+                                    cartDeleteStatement.setInt(1, orderDetail.getProduct_id());
+                                    cartDeleteStatement.setInt(2, order.getUser_id());
+
+                                    int rowsAffectedCart = cartDeleteStatement.executeUpdate();
+
+                                    if (rowsAffectedCart <= 0) {
+                                        connection.rollback();
+                                        return false;
+                                    }
+                                }
+                                connection.commit();
+                                return true;
+                            }
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                connection.rollback();
+                throw new RuntimeException(e);
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
+
+    @Override
+    public List<OrderDTO> getAllOrderbyUserId(int userId) throws RemoteException {
+        List<OrderDTO> orders = new ArrayList<>();
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String query = "SELECT o.id, o.order_date_time, o.order_status, od.product_id, od.product_quantity, p.product_name, p.price " +
+                    "FROM orders o " +
+                    "JOIN orderdetails od ON o.id = od.order_id " +
+                    "JOIN products p ON od.product_id = p.product_id " +
+                    "WHERE o.user_id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setInt(1, userId);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    Map<Integer, OrderDTO> orderMap = new HashMap<>();
+
+                    while (resultSet.next()) {
+                        int orderId = resultSet.getInt("id");
+
+                        // Check if the order is already in the map
+                        OrderDTO order = orderMap.get(orderId);
+
+                        if (order == null) {
+                            order = new OrderDTO();
+                            order.setId(orderId);
+                            order.setDateTime(resultSet.getString("order_date_time"));
+                            order.setOrderStatus(resultSet.getString("order_status"));
+                            orderMap.put(orderId, order);
+                        }
+
+                        // Order details
+                        OrderDTO orderDetail = new OrderDTO();
+                        orderDetail.setProductName(resultSet.getString("product_name"));
+                        orderDetail.setProductQuantity(resultSet.getInt("product_quantity"));
+                        orderDetail.setPrice(resultSet.getDouble("price"));
+
+                        // Add order detail to the order
+                        order.getOrderDetailsList().add(orderDetail);
+                    }
+
+                    // Add all orders to the list
+                    orders.addAll(orderMap.values());
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return orders;
+    }
+
+    @Override
+    public List<OrderDTO> getAllOrdersbyStatus(String status) throws RemoteException {
+        List<OrderDTO> orders = new ArrayList<>();
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String query = "SELECT o.id, o.order_date_time, o.order_status, od.product_id, od.product_quantity, p.product_name, p.price, u.username " +
+                    "FROM orders o " +
+                    "JOIN orderdetails od ON o.id = od.order_id " +
+                    "JOIN products p ON od.product_id = p.product_id " +
+                    "JOIN users u ON o.user_id = u.id " +
+                    "WHERE o.order_status = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, status);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    Map<Integer, OrderDTO> orderMap = new HashMap<>();
+
+                    while (resultSet.next()) {
+                        int orderId = resultSet.getInt("id");
+
+                        // Check if the order is already in the map
+                        OrderDTO order = orderMap.get(orderId);
+
+                        if (order == null) {
+                            order = new OrderDTO();
+                            order.setId(orderId);
+                            order.setDateTime(resultSet.getString("order_date_time"));
+                            order.setUsername(resultSet.getString("username"));
+                            order.setOrderStatus(resultSet.getString("order_status"));
+                            orderMap.put(orderId, order);
+                        }
+
+                        // Order details
+                        OrderDTO orderDetail = new OrderDTO();
+                        orderDetail.setProductName(resultSet.getString("product_name"));
+                        orderDetail.setProductQuantity(resultSet.getInt("product_quantity"));
+                        orderDetail.setPrice(resultSet.getDouble("price"));
+
+                        // Add order detail to the order
+                        order.getOrderDetailsList().add(orderDetail);
+                    }
+
+                    // Add all orders to the list
+                    orders.addAll(orderMap.values());
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return orders;
+    }
+
+
+    @Override
+    public boolean cancelOrder(int selectedOrderId) {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String updateQuery = "UPDATE orders SET order_status = 'Cancelled' WHERE id = ?";
+            try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
+                updateStatement.setInt(1, selectedOrderId);
+                int rowsAffected = updateStatement.executeUpdate();
+                return rowsAffected > 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean updateOrderStatus(int selectedOrderId, String orderStatus) {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String updateQuery = "UPDATE orders SET order_status = ? WHERE id = ?";
+            try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
+                updateStatement.setString(1, orderStatus);
+                updateStatement.setInt(2, selectedOrderId);
+                int rowsAffected = updateStatement.executeUpdate();
+                return rowsAffected > 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @Override
     public List<UserInfoDTO> getAllUsers() throws RemoteException {
