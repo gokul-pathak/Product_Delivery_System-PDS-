@@ -3,6 +3,7 @@ package PDS;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -12,7 +13,7 @@ public class CartDTO implements Serializable {
     private int product_quantity;
     private int user_id;
     private LocalDateTime order_date_time;
-    private int productId;
+    private String productId;
     private String productName;
     private double price;
     private int quantity;
@@ -80,15 +81,18 @@ public class CartDTO implements Serializable {
             boolean choiceValid = false;
             while (!choiceValid) {
                 System.out.println("All Cart Products:");
-                System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", "Product ID", "Product Name", "Quantity", "Price", "Total Price");
+                System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", "S.N", "Product Name", "Quantity", "Price", "Total Price");
                 System.out.println("----------------------------------------------------------------------------------------------------------");
 
                 // Display products in a tabular format
                 int SN = 1;
+                double count = 0;
                 for (CartDTO cart : carts) {
                     System.out.printf("%-15s %-25s %-40s %-10s %-20s%n", SN, cart.getProductName(), cart.getQuantity(), cart.getPrice(), (cart.getQuantity() * cart.getPrice()));
                     SN++;
+                    count = count + (cart.getQuantity() * cart.getPrice());
                 }
+                System.out.println("Total Amount :"+ count);
                 System.out.println("\n\nChoose Option");
                 System.out.println("1. Continue Order");
                 System.out.println("2. Back");
@@ -109,11 +113,34 @@ public class CartDTO implements Serializable {
                                 System.out.println("\nDo you want to complete the order process? (yes/no)!!");
                                 String CompleteOrderChoice = scanner.nextLine().toLowerCase();
                                 if ("yes".equals(CompleteOrderChoice)) {
-                                    System.out.println("Your Order has been Sent.");
-                                    System.out.println("Redirectly to Home Page!");
-                                    Additonal.timer();
-                                    choiceValid = true;
-                                    UserInfoDTO.userHomePage(pds, userId);
+                                    OrderDTO order = new OrderDTO();
+                                    order.setUser_id(userId);
+                                    LocalDateTime currentDateTime = LocalDateTime.now();
+                                    order.setOrder_date_time(currentDateTime);
+
+                                    boolean addUserOrder = false;
+                                    List<OrderDTO> orderDetailsList = new ArrayList<>();
+                                    for (CartDTO cart : carts) {
+                                        OrderDTO orderDetail = new OrderDTO();
+                                        orderDetail.setProduct_id(Integer.parseInt(cart.getProductId()));
+                                        orderDetail.setProduct_quantity(cart.getQuantity());
+                                        orderDetailsList.add(orderDetail);
+                                    }
+                                    order.setOrderDetailsList(orderDetailsList);
+                                    addUserOrder = pds.addUserOrder(order);
+                                    if (addUserOrder) {
+                                        System.out.println("Your Order has been Sent.");
+                                        System.out.println("Redirectly to Home Page!");
+                                        Additonal.timer();
+                                        choiceValid = true;
+                                        UserInfoDTO.userHomePage(pds, userId);
+                                    }
+                                    else {
+                                        System.out.println("Error while Sendint the Order!! Please Try Again");
+                                        Additonal.timer();
+                                        break;
+                                    }
+
                                     break;
                                 }else {
                                     break;
@@ -136,7 +163,21 @@ public class CartDTO implements Serializable {
             }
 
         } else {
-            System.out.println("No Data in Cart!!!");
+            boolean isTrue = false;
+            while (!isTrue) {
+                System.out.println("No Data in Cart!!!\n");
+                System.out.println("1. Back");
+                System.out.print("Enter your choice: ");
+                int choice = scanner.nextInt();
+                scanner.nextLine();
+                if (choice == 1) {
+                    isTrue = true;
+                    UserInfoDTO.userHomePage(pds, userId);
+                } else {
+                    System.out.println("Invalid Option!! Please Choose Valid Option\n");
+                }
+            }
+
         }
     }
 
@@ -163,5 +204,13 @@ public class CartDTO implements Serializable {
 
     public int getQuantity() {
         return quantity;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
+
+    public String getProductId() {
+        return productId;
     }
 }

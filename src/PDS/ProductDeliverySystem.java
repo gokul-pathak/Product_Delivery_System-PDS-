@@ -8,8 +8,6 @@ import java.util.List;
 
 public interface ProductDeliverySystem extends Remote {
 
-
-
     boolean registerAccount(UserInfoDTO userInfo) throws RemoteException;
     boolean loginUser(UserInfoDTO userInfo) throws RemoteException;
 
@@ -24,6 +22,7 @@ public interface ProductDeliverySystem extends Remote {
     List<ProductDTO> getProductsByCategory(String category) throws RemoteException;
 
     List<CartDTO> getAllCartProductsbyUserId(int userId) throws RemoteException;
+
     boolean addProductToCart(CartDTO cart) throws RemoteException;
     int getUserIdByUsername(String username) throws RemoteException;
 
@@ -35,4 +34,14 @@ public interface ProductDeliverySystem extends Remote {
     UserInfoDTO getUserInfoById(int userId) throws RemoteException;
 
     boolean updateUser(UserInfoDTO updatedUser) throws RemoteException;
+
+    boolean addUserOrder(OrderDTO order) throws RemoteException;
+
+    boolean cancelOrder(int selectedOrderId) throws RemoteException;
+
+    List<OrderDTO> getAllOrderbyUserId(int userId) throws RemoteException;
+
+    List<OrderDTO> getAllOrdersbyStatus(String status) throws RemoteException;
+
+    boolean updateOrderStatus(int selectedOrderId, String orderStatus) throws RemoteException;
 }

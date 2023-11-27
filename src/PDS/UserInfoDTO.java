@@ -248,7 +248,7 @@ public class UserInfoDTO implements Serializable {
             System.out.println("2. View All Product");
             System.out.println("3. View Cart");
             System.out.println("4. View/Track Order");
-            System.out.println("5. Exit");
+            System.out.println("5. Logout");
             System.out.print("Enter your choice: ");
             int choice = scanner.nextInt();
             scanner.nextLine();
@@ -269,67 +269,73 @@ public class UserInfoDTO implements Serializable {
                     choiceValid = true;
                     break;
                 case 4:
+                    Additonal.randomSpace();
+                    OrderDTO.viewOrderByUserId(pds, userId);
                     choiceValid = true;
                     break;
                 case 5:
                     System.out.println("Exiting user panel.");
-                    break;
+                    choiceValid = true;
+                    ProductDeliverySystemClient.startSystem();
+
                 default:
                     System.out.println("Invalid choice. Please enter a valid option.");
-                    break;
+
             }
         }
     }
     public static void adminHomePage(ProductDeliverySystem pds, int userId) throws RemoteException {
         Scanner scanner = new Scanner(System.in);
 
-        // Get the user's role
         int role = pds.getUserRole(userId);
-
-        // Display the welcome message
         System.out.println("\n\nWelcome Admin!");
 
-        // Display admin-specific options
-        System.out.println("1. Manage Category");
-        System.out.println("2. Manage Product");
-        System.out.println("3. Manage Order");
-        System.out.println("4. Manage User");
-        System.out.println("5. Exit");
+        boolean isChoice = false;
+        while (!isChoice) {
+            System.out.println("1. Manage User");
+            System.out.println("2. Manage Category");
+            System.out.println("3. Manage Product");
+            System.out.println("4. Manage Order");
+            System.out.println("5. Logout");
 
-        // Get user input
-        System.out.print("Enter your choice: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine();  // Consume the newline character
+            // Get user input
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
 
-        switch (choice) {
-            case 1:
-                // Admin-specific logic for managing categories
-                // ...
-                break;
-            case 2:
-                // Admin-specific logic for managing products
-                // ...
-                break;
-            case 3:
-                // Admin-specific logic for managing orders
-                // ...
-                break;
-            case 4:
-                //Admin-specific logic for managing users
-                //...
-                adminManageUsers(pds);
-                break;
-            case 5:
-                // Exit
-                System.out.println("Exiting admin panel.");
-                break;
-            default:
-                System.out.println("Invalid choice. Please enter a valid option.");
-                break;
+            switch (choice) {
+                case 1:
+                    adminManageUsers(pds, userId);
+                    isChoice= true;
+                    break;
+                case 2:
+                    // Admin-specific logic for managing Categories
+                    // ...
+                    break;
+                case 3:
+                    // Admin-specific logic for managing Products
+                    // ...
+                    break;
+                case 4:
+                    Additonal.randomSpace();
+                    OrderDTO.viewAllOrderpds(pds, userId);
+                    isChoice = true;
+                    break;
+                case 5:
+                    // Exit
+                    System.out.println("Exiting admin panel.");
+                    isChoice = true;
+                    Additonal.timer();
+                    ProductDeliverySystemClient.startSystem();
+
+                default:
+                    System.out.println("Invalid choice. Please enter a valid option.");
+                    break;
+            }
         }
     }
 
-    public static void adminManageUsers(ProductDeliverySystem pds) throws RemoteException {
+    public static void adminManageUsers(ProductDeliverySystem pds, int userId) throws RemoteException {
         Scanner scanner = new Scanner(System.in);
 
         boolean continueEditing = true;
@@ -349,19 +355,24 @@ public class UserInfoDTO implements Serializable {
                 case 1:
                     // View Users
                     viewUsers(pds);
+                    continueEditing = false;
                     break;
                 case 2:
                     // Delete User
                     deleteUser(pds);
+                    continueEditing = false;
                     break;
                 case 3:
                     // Update User
                     updateUser(pds);
+                    continueEditing = false;
                     break;
                 case 4:
-                    // Go Back
+                    continueEditing = false;
                     System.out.println("Going back.");
-                    return; //
+                    Additonal.timer();
+                    adminHomePage(pds, userId);
+                    break; //
                 default:
                     System.out.println("Invalid choice. Please enter a valid option.");
 
