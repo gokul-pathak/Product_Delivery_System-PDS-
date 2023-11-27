@@ -1,6 +1,8 @@
 package PDS;
 
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 import java.util.ArrayList;
@@ -96,16 +98,24 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
 
     public static void main(String[] args) {
         try {
-            // Register the MySQL JDBC driver
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            // Create an instance of the server and bind it to RMI registry
+            // Start the RMI registry on port 1098
+            LocateRegistry.createRegistry(1098);
+
+            // Create an instance of your RMI server
             ProductDeliverySystemServer server = new ProductDeliverySystemServer();
-            java.rmi.registry.LocateRegistry.createRegistry(1098).rebind("PDS", server);
-            System.out.println("Server is running...");
-        } catch (ClassNotFoundException | RemoteException e) {
+
+            // Bind the server to the registry with the name "PDS"
+            Registry registry = LocateRegistry.getRegistry(1098);
+            registry.rebind("PDS", server);
+
+            System.out.println("Server ready.");
+
+            // You might want to add some code here to keep the server running,
+            // for example, waiting for user input or using a loop.
+
+        } catch (Exception e) {
+            System.err.println("Server exception: " + e.toString());
             e.printStackTrace();
-        } finally {
-            // Close any resources if needed
         }
     }
 
