@@ -2,6 +2,10 @@
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+*.class
+out/*
+!**/src/main/**
+!**/src/test/**
 
 ### Eclipse ###
 .apt_generated
