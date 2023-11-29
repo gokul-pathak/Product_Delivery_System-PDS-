@@ -25,7 +25,7 @@ public class ProductDeliverySystemClient {
 
         try {
             // Connect to the RMI registry on the server
-            Registry registry = LocateRegistry.getRegistry("localhost", 1098);
+            Registry registry = LocateRegistry.getRegistry("localhost", 1099);
 
             // Look up the remote object by name
             ProductDeliverySystem pds = (ProductDeliverySystem) registry.lookup("PDS");

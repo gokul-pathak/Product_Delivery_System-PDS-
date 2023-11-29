@@ -55,6 +55,7 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
     }
 
 
+
     // Helper method to check if a username is already taken
 
     @Override
@@ -99,13 +100,13 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
     public static void main(String[] args) {
         try {
             // Start the RMI registry on port 1098
-            LocateRegistry.createRegistry(1098);
+            //LocateRegistry.createRegistry(1098);
 
             // Create an instance of your RMI server
             ProductDeliverySystemServer server = new ProductDeliverySystemServer();
 
             // Bind the server to the registry with the name "PDS"
-            Registry registry = LocateRegistry.getRegistry(1098);
+            Registry registry = LocateRegistry.getRegistry(1099);
             registry.rebind("PDS", server);
 
             System.out.println("Server ready.");
