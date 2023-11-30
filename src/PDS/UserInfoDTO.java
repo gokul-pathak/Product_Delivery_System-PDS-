@@ -20,7 +20,7 @@ public class UserInfoDTO implements Serializable {
     private String password;
     private int id;
     private int role;
-
+    private String icnumber;
 
     public void setId(int id) {
         this.id = id;
@@ -46,9 +46,10 @@ public class UserInfoDTO implements Serializable {
         // Default constructor
     }
 
-    public UserInfoDTO(String firstName, String lastName, String email, String phone, String address, String username, String password) {
+    public UserInfoDTO(String firstName, String lastName,String ICNumber, String email, String phone, String address, String username, String password) {
         this.firstName = firstName;
         this.lastName = lastName;
+        this.icnumber =ICNumber;
         this.email = email;
         this.phone = phone;
         this.address = address;
@@ -65,6 +66,11 @@ public class UserInfoDTO implements Serializable {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
+
+    public void setICNumber(String ICNumber) {
+        this.icnumber = ICNumber;
+    }
+
 
     public void setEmail(String email) {
         this.email = email;
@@ -95,6 +101,10 @@ public class UserInfoDTO implements Serializable {
     public String getLastName() {
         return lastName;
     }
+    public String getICNumber() {
+        return icnumber;
+    }
+
 
     public String getEmail() {
         return email;
@@ -138,6 +148,8 @@ public class UserInfoDTO implements Serializable {
                 String firstName = scanner.nextLine();
                 System.out.println("Enter your last name:");
                 String lastName = scanner.nextLine();
+                System.out.println("Enter your IC_Number (Passport):");
+                String ICNumber = scanner.nextLine();
                 System.out.println("Enter your email address:");
                 String email = scanner.nextLine();
                 System.out.println("Enter your contact number:");
@@ -149,6 +161,7 @@ public class UserInfoDTO implements Serializable {
 
                 signUpInfo.setFirstName(firstName);
                 signUpInfo.setLastName(lastName);
+                signUpInfo.setICNumber(ICNumber);
                 signUpInfo.setEmail(email);
                 signUpInfo.setPhone(phone);
                 signUpInfo.setAddress(address);
@@ -204,7 +217,7 @@ public class UserInfoDTO implements Serializable {
                         System.out.println("Admin login successful!");
                         // Add admin-specific functionality here
                         System.out.println("Redirecting user page in ");
-                        Additonal.timer();
+                        //Additonal.timer();
                         adminHomePage(pds,userId);
 
                     } else if (role == 1) {
@@ -246,7 +259,7 @@ public class UserInfoDTO implements Serializable {
         Scanner scanner = new Scanner(System.in);
         boolean choiceValid = false;
         while (!choiceValid) {
-            System.out.println("\n\nWelcome to Product Delivery System");
+            System.out.println("User HomePage\n\nWelcome to Product Delivery System");
             System.out.println("1. View Category");
             System.out.println("2. View All Product");
             System.out.println("3. View Cart");
@@ -291,7 +304,7 @@ public class UserInfoDTO implements Serializable {
         Scanner scanner = new Scanner(System.in);
 
         int role = pds.getUserRole(userId);
-        System.out.println("\n\nWelcome Admin!");
+        System.out.println("Admin HomePage\n\nWelcome Admin!");
 
         boolean isChoice = false;
         while (!isChoice) {
@@ -367,7 +380,7 @@ public class UserInfoDTO implements Serializable {
             switch (choice) {
                 case 1:
                     // View Users
-                    viewUsers(pds);
+                    viewUsers(pds, userId);
                     continueEditing = false;
                     break;
                 case 2:
@@ -383,7 +396,7 @@ public class UserInfoDTO implements Serializable {
                 case 4:
                     continueEditing = false;
                     System.out.println("Going back.");
-                    Additonal.timer();
+                    //Additonal.timer();
                     adminHomePage(pds, userId);
                     break; //
                 default:
@@ -399,7 +412,7 @@ public class UserInfoDTO implements Serializable {
 
     }
 
-    public static void viewUsers(ProductDeliverySystem pds) throws RemoteException {
+    public static void viewUsers(ProductDeliverySystem pds , int userId) throws RemoteException {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -409,13 +422,13 @@ public class UserInfoDTO implements Serializable {
             List<UserInfoDTO> users = pds.getAllUsers();
 
             // Display users in tabular format
-            System.out.printf("%-5s %-15s %-15s %-30s %-15s %-15s %-15s\n",
-                    "ID", "First Name", "Last Name", "Email", "Phone", "Username", "Role");
+            System.out.printf("%-5s %-15s %-15s %-15s %-30s %-15s %-15s %-15s\n",
+                    "ID", "First Name", "Last Name", "IC_Number", "Email", "Phone", "Address", "Username");
             System.out.println("-----------------------------------------------------------------------------------------------------------------");
             for (UserInfoDTO user : users) {
-                System.out.printf("%-5s %-15s %-15s %-30s %-15s %-15s %-15s\n",
-                        user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(),
-                        user.getPhone(), user.getUsername(), user.getRole());
+                System.out.printf("%-5s %-15s %-15s %-15s %-30s %-15s %-15s %-15s\n",
+                        user.getId(), user.getFirstName(), user.getLastName(), user.getICNumber(), user.getEmail(),
+                        user.getPhone(), user.getAddress(), user.getUsername());
             }
 
             System.out.println("-----------------------------------------------------------------------------------------------------------------");
@@ -429,7 +442,8 @@ public class UserInfoDTO implements Serializable {
 
             if (choice == 1) {
                 // Go Back
-                return;  // Exit the method and go back
+                adminManageUsers(pds, userId);
+                  // Exit the method and go back
             } else {
                 System.out.println("Invalid choice. Please enter a valid option.");
             }
@@ -477,12 +491,13 @@ public class UserInfoDTO implements Serializable {
             System.out.println("No users found.");
         } else {
             System.out.println("User Table:");
-            System.out.printf("%-5s %-15s %-15s %-30s %-15s %-15s %-10s%n",
-                    "ID", "First Name", "Last Name", "Email", "Phone", "Username", "Role");
+            System.out.printf("%-5s %-15s %-15s %-15s %-30s %-15s %-15s %-15s\n",
+                    "ID", "First Name", "Last Name", "IC_Number", "Email", "Phone", "Address", "Username");
+            System.out.println("-----------------------------------------------------------------------------------------------------------------");
             for (UserInfoDTO user : users) {
-                System.out.printf("%-5d %-15s %-15s %-30s %-15s %-15s %-10d%n",
-                        user.getId(), user.getFirstName(), user.getLastName(),
-                        user.getEmail(), user.getPhone(), user.getUsername(), user.getRole());
+                System.out.printf("%-5d %-15s %-15s %-30s %-15s %-15s %-15s\n",
+                        user.getId(), user.getFirstName(), user.getICNumber(), user.getEmail(),
+                        user.getPhone(), user.getAddress(), user.getUsername());
             }
         }
     }
@@ -516,6 +531,7 @@ public class UserInfoDTO implements Serializable {
         System.out.println("ID: " + userToEdit.getId());
         System.out.println("First Name: " + userToEdit.getFirstName());
         System.out.println("Last Name: " + userToEdit.getLastName());
+        System.out.println("IC_Number: " + userToEdit.getICNumber());
         System.out.println("Email: " + userToEdit.getEmail());
         System.out.println("Phone: " + userToEdit.getPhone());
         System.out.println("Username: " + userToEdit.getUsername());
@@ -529,6 +545,9 @@ public class UserInfoDTO implements Serializable {
         System.out.print("New Last Name: ");
         String newLastName = scanner.nextLine().trim();
 
+        System.out.print("New IC_Number: ");
+        String newICNumber = scanner.nextLine().trim();
+
         System.out.print("New Email: ");
         String newEmail = scanner.nextLine().trim();
 
@@ -539,12 +558,13 @@ public class UserInfoDTO implements Serializable {
         String newUsername = scanner.nextLine().trim();
 
         // Update the user details if the user entered new values
-        if (!newFirstName.isEmpty() || !newLastName.isEmpty() || !newEmail.isEmpty() ||
+        if (!newFirstName.isEmpty() || !newLastName.isEmpty() || !newICNumber.isEmpty() || !newEmail.isEmpty() ||
                 !newPhone.isEmpty() || !newUsername.isEmpty()) {
             UserInfoDTO updatedUser = new UserInfoDTO();
             updatedUser.setId(userToEdit.getId());
             updatedUser.setFirstName(newFirstName.isEmpty() ? userToEdit.getFirstName() : newFirstName);
             updatedUser.setLastName(newLastName.isEmpty() ? userToEdit.getLastName() : newLastName);
+            updatedUser.setICNumber(newICNumber.isEmpty() ? userToEdit.getICNumber(): newICNumber);
             updatedUser.setEmail(newEmail.isEmpty() ? userToEdit.getEmail() : newEmail);
             updatedUser.setPhone(newPhone.isEmpty() ? userToEdit.getPhone() : newPhone);
             updatedUser.setUsername(newUsername.isEmpty() ? userToEdit.getUsername() : newUsername);

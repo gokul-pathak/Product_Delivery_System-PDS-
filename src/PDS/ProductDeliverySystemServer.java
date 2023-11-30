@@ -1,6 +1,8 @@
 package PDS;
 
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 import java.util.*;
@@ -27,15 +29,16 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
             }
 
             // If the username is not taken, proceed with the registration
-            String sql = "INSERT INTO users (first_name, last_name, email, phone, address, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO users (first_name, last_name, IC_Number, email, phone, address, username, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, userInfo.getFirstName());
                 preparedStatement.setString(2, userInfo.getLastName());
-                preparedStatement.setString(3, userInfo.getEmail());
-                preparedStatement.setString(4, userInfo.getPhone());
-                preparedStatement.setString(5, userInfo.getAddress());
-                preparedStatement.setString(6, userInfo.getUsername());
-                preparedStatement.setString(7, userInfo.getPassword());
+                preparedStatement.setString(3, userInfo.getICNumber());
+                preparedStatement.setString(4, userInfo.getEmail());
+                preparedStatement.setString(5, userInfo.getPhone());
+                preparedStatement.setString(6, userInfo.getAddress());
+                preparedStatement.setString(7, userInfo.getUsername());
+                preparedStatement.setString(8, userInfo.getPassword());
 
                 int rowsAffected = preparedStatement.executeUpdate();
 
@@ -93,16 +96,24 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
 
     public static void main(String[] args) {
         try {
-            // Register the MySQL JDBC driver
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            // Create an instance of the server and bind it to RMI registry
+            // Start the RMI registry on port 1099
+            //LocateRegistry.createRegistry(1099);
+
+            // Create an instance of your RMI server
             ProductDeliverySystemServer server = new ProductDeliverySystemServer();
-            java.rmi.registry.LocateRegistry.createRegistry(1098).rebind("PDS", server);
-            System.out.println("Server is running...");
-        } catch (ClassNotFoundException | RemoteException e) {
+
+            // Bind the server to the registry with the name "PDS"
+            Registry registry = LocateRegistry.getRegistry(1099);
+            registry.rebind("PDS", server);
+
+            System.out.println("Server ready.");
+
+            // You might want to add some code here to keep the server running,
+            // for example, waiting for user input or using a loop.
+
+        } catch (Exception e) {
+            System.err.println("Server exception: " + e.toString());
             e.printStackTrace();
-        } finally {
-            // Close any resources if needed
         }
     }
 
@@ -509,11 +520,12 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
                         UserInfoDTO user = new UserInfoDTO();
                         user.setId(resultSet.getInt("id"));
                         user.setFirstName(resultSet.getString("first_name"));
-                        user.setLastName(resultSet.getString("last_name"));
+                        //user.setLastName(resultSet.getString("last_name"));
+                        user.setLastName(resultSet.getString("IC_Number"));
                         user.setEmail(resultSet.getString("email"));
                         user.setPhone(resultSet.getString("phone"));
+                        user.setAddress(resultSet.getString("address"));
                         user.setUsername(resultSet.getString("username"));
-                        user.setRole(resultSet.getInt("role"));
 
                         users.add(user);
                     }
@@ -546,18 +558,19 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
 
                 if (rowsAffected > 0) {
                     // If deletion from the main table is successful, insert into the deleted_users table
-                    String insertSql = "INSERT INTO deleted_users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    String insertSql = "INSERT INTO deleted_users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     try (PreparedStatement insertStatement = connection.prepareStatement(insertSql)) {
                         if (deletedUser != null) {
                             insertStatement.setInt(1, deletedUser.getId());
                             insertStatement.setString(2, deletedUser.getUsername());
                             insertStatement.setString(3, deletedUser.getFirstName());
                             insertStatement.setString(4, deletedUser.getLastName());
-                            insertStatement.setString(5, deletedUser.getEmail());
-                            insertStatement.setString(6, deletedUser.getPhone());
-                            insertStatement.setString(7, deletedUser.getAddress());
-                            insertStatement.setString(8, deletedUser.getPassword());
-                            insertStatement.setInt(9, deletedUser.getRole());
+                            insertStatement.setString(5, deletedUser.getICNumber());
+                            insertStatement.setString(6, deletedUser.getEmail());
+                            insertStatement.setString(7, deletedUser.getPhone());
+                            insertStatement.setString(8, deletedUser.getAddress());
+                            insertStatement.setString(9, deletedUser.getPassword());
+                            insertStatement.setInt(10, deletedUser.getRole());
 
                             int insertedRows = insertStatement.executeUpdate();
 
@@ -601,6 +614,7 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
                         userInfo.setUsername(resultSet.getString("username"));
                         userInfo.setFirstName(resultSet.getString("first_name"));
                         userInfo.setLastName(resultSet.getString("last_name"));
+                        userInfo.setLastName(resultSet.getString("IC_Number"));
                         userInfo.setEmail(resultSet.getString("email"));
                         userInfo.setPhone(resultSet.getString("phone"));
                         userInfo.setAddress(resultSet.getString("address"));
@@ -629,16 +643,17 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
     public boolean updateUser(UserInfoDTO updatedUser) throws RemoteException {
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             // Construct SQL query to update user details
-            String updateSql = "UPDATE users SET first_name=?, last_name=?, email=?, phone=?, username=? WHERE id=?";
+            String updateSql = "UPDATE users SET first_name=?, last_name=?, IC_Number=?, email=?, phone=?, username=? WHERE id=?";
 
             try (PreparedStatement updateStatement = connection.prepareStatement(updateSql)) {
                 // Set parameters for the update query
                 updateStatement.setString(1, updatedUser.getFirstName());
                 updateStatement.setString(2, updatedUser.getLastName());
-                updateStatement.setString(3, updatedUser.getEmail());
-                updateStatement.setString(4, updatedUser.getPhone());
-                updateStatement.setString(5, updatedUser.getUsername());
-                updateStatement.setInt(6, updatedUser.getId());
+                updateStatement.setString(3, updatedUser.getICNumber());
+                updateStatement.setString(4, updatedUser.getEmail());
+                updateStatement.setString(5, updatedUser.getPhone());
+                updateStatement.setString(6, updatedUser.getUsername());
+                updateStatement.setInt(7, updatedUser.getId());
 
                 // Execute the update query
                 int rowsAffected = updateStatement.executeUpdate();
