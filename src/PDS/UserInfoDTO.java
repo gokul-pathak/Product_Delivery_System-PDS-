@@ -1,6 +1,9 @@
 package PDS;
 import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -309,12 +312,22 @@ public class UserInfoDTO implements Serializable {
                     isChoice= true;
                     break;
                 case 2:
-                    // Admin-specific logic for managing Categories
-                    // ...
+                    try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/dcoms_test", "root", "")) {
+                        CategoryDTO.adminManageCategory(pds, userId);
+
+                    } catch (SQLException e) {
+                        throw new RuntimeException("Error connecting to the database", e);
+                    }
+
                     break;
                 case 3:
-                    // Admin-specific logic for managing Products
-                    // ...
+                    try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/dcoms_test", "root", "")) {
+                       ProductDTO.adminManageProducts(pds,userId);
+
+                    } catch (SQLException e) {
+                        throw new RuntimeException("Error connecting to the database", e);
+                    }
+
                     break;
                 case 4:
                     Additonal.randomSpace();

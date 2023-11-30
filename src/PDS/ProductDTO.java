@@ -270,4 +270,226 @@ public class ProductDTO implements Serializable {
             System.out.println("No products available for the selected category.");
         }
     }
+
+
+    public static void adminManageProducts(ProductDeliverySystem pds, int userId) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
+
+        boolean continueEditing = true;
+
+        while (continueEditing) {
+            System.out.println("\nAdmin Products Management:");
+            System.out.println("1. Add Products");
+            System.out.println("2. Edit Products");
+            System.out.println("3. View Prdocuts");
+            System.out.println("4. Delete Products");
+            System.out.println("5. Go back");
+            System.out.print("Enter your choice: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1:
+ProductDTO.addProduct(pds);
+
+                    break;
+                case 2:
+ProductDTO.updateProduct(pds);
+
+                    break;
+                case 3:
+ProductDTO.viewProducts(pds);
+
+                    break;
+
+                case 4:
+ProductDTO.deleteProduct(pds);
+                    break;
+                case 5:
+                    continueEditing = false;
+                    System.out.println("Going back.");
+                    Additonal.timer();
+                    UserInfoDTO.adminHomePage( pds,userId);
+                    break; //
+                default:
+                    System.out.println("Invalid choice. Please enter a valid option.");
+
+                    // Ask the user if they want to continue
+                    System.out.print("Do you want to continue managing categories? (yes/no): ");
+                    String continueChoice = scanner.nextLine().toLowerCase();
+                    continueEditing = "yes".equals(continueChoice);
+                    break;
+            }
+        }
+
+    }
+
+    public static void addProduct(ProductDeliverySystem pds) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
+        boolean productNameTaken;
+
+            // User is prompted to enter product details
+            System.out.println("Add Product");
+            System.out.println("Enter the product name:");
+            String productName = scanner.nextLine();
+
+            System.out.println("Enter the product description:");
+            String productDescription = scanner.nextLine();
+
+            System.out.println("Enter the product price:");
+            double productPrice = scanner.nextDouble();
+
+            System.out.println("Enter the quantity available:");
+            int quantityAvailable = scanner.nextInt();
+
+            System.out.println("Enter the category ID:");
+            int categoryId = scanner.nextInt();
+            scanner.nextLine();
+
+            ProductDTO productInfo = new ProductDTO();
+            productInfo.setProductName(productName);
+            productInfo.setDescription(productDescription);
+            productInfo.setPrice(productPrice);
+            productInfo.setAvailable(quantityAvailable);
+            productInfo.setCategoryId(categoryId);
+                boolean addProductStatus = pds.addProducts(productInfo);
+                if (addProductStatus) {
+                    System.out.println("Product added successfully!");
+                } else {
+                    System.out.println("Category id does not exist. Add the category first");
+                }
+   }
+
+    private static void displayProductTable(ProductDeliverySystem pds) throws RemoteException {
+        List<ProductDTO> products = pds.getAllProducts();
+        if (products.isEmpty()) {
+            System.out.println("No products found.");
+        } else {
+            System.out.println("Product Table:");
+            System.out.printf("%-5s %-20s %-40s %-10s %-15s %-10s%n", "ID", "Product Name", "Description", "Price", "Quantity Available", "Category ID");
+            for (ProductDTO product : products) {
+                System.out.printf("%-5d %-20s %-40s %-10.2f %-15d %-10d%n",
+                        product.getProductId(), product.getProductName(), product.getDescription(),
+                        product.getPrice(), product.getAvailable(), product.getCategoryId());
+            }
+        }
+    }
+
+    private static void updateProduct(ProductDeliverySystem pds) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
+        displayProductTable(pds);
+        System.out.print("Enter the ID of the product you want to edit (or enter 0 to go back): ");
+        int productIdToEdit = scanner.nextInt();
+        scanner.nextLine();
+
+        if (productIdToEdit == 0) {
+            System.out.println("Going back to the main menu.");
+            return;
+        }
+        ProductDTO productToEdit = pds.getProductInfoById(productIdToEdit);
+        if (productToEdit == null) {
+            System.out.println("Product with ID " + productIdToEdit + " not found.");
+            return;
+        }
+        System.out.println("Current Details:");
+        System.out.println("ID: " + productToEdit.getProductId());
+        System.out.println("Product Name: " + productToEdit.getProductName());
+        System.out.println("Description: " + productToEdit.getDescription());
+        System.out.println("Price: " + productToEdit.getPrice());
+        System.out.println("Quantity Available: " + productToEdit.getAvailable());
+        System.out.println("Category ID: " + productToEdit.getCategoryId());
+        System.out.println("Enter new details (press Enter to keep the current value):");
+        System.out.print("New Product Name: ");
+        String newProductName = scanner.nextLine().trim();
+
+        System.out.print("New Description: ");
+        String newDescription = scanner.nextLine().trim();
+
+        System.out.print("New Price: ");
+        double newPrice = scanner.nextDouble();
+        scanner.nextLine();
+
+        System.out.print("New Quantity Available: ");
+        int newQuantityAvailable = scanner.nextInt();
+        scanner.nextLine();
+
+        System.out.print("New Category ID: ");
+        int newCategoryId = scanner.nextInt();
+        scanner.nextLine();
+        if (!newProductName.isEmpty() || !newDescription.isEmpty() || newPrice != 0.0 || newQuantityAvailable != 0 || newCategoryId != 0) {
+            ProductDTO updatedProduct = new ProductDTO();
+            updatedProduct.setProductId(productToEdit.getProductId());
+            updatedProduct.setProductName(!newProductName.isEmpty() ? newProductName : productToEdit.getProductName());
+            updatedProduct.setDescription(!newDescription.isEmpty() ? newDescription : productToEdit.getDescription());
+            updatedProduct.setPrice(newPrice != 0.0 ? newPrice : productToEdit.getPrice());
+            updatedProduct.setAvailable(newQuantityAvailable != 0 ? newQuantityAvailable : productToEdit.getAvailable());
+            updatedProduct.setCategoryId(newCategoryId != 0 ? newCategoryId : productToEdit.getCategoryId());
+            boolean updateResult = pds.updateProduct(updatedProduct);
+            if (updateResult) {
+                System.out.println("Product details updated successfully.");
+            } else {
+                System.out.println("Failed to update product details.");
+            }
+        } else {
+            System.out.println("No changes made. Going back to the main menu.");
+        }
+    }
+
+
+    public static void viewProducts(ProductDeliverySystem pds) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.println("\nAdmin Product Management - View Products:");
+            List<ProductDTO> products = pds.getAllProducts();
+            System.out.printf("%-5s %-20s %-40s %-10s %-15s %-10s\n", "ID", "Product Name", "Description", "Price", "Quantity Available", "Category ID");
+            System.out.println("----------------------------------------------------------------------------------------------------------------------------------------");
+            for (ProductDTO product : products) {
+                System.out.printf("%-5d %-20s %-40s %-10.2f %-15d %-10d\n",
+                        product.getProductId(), product.getProductName(), product.getDescription(),
+                        product.getPrice(), product.getAvailable(), product.getCategoryId());
+            }
+            System.out.println("-----------------------------------------------------------------------------------------------------------------------------------------");
+            System.out.println("1. Go Back");
+            System.out.print("Enter your choice: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+
+            if (choice == 1) {
+
+                return;
+            } else {
+                System.out.println("Invalid choice. Please enter a valid option.");
+            }
+        }
+    }
+
+    private static void deleteProduct(ProductDeliverySystem pds) throws RemoteException {
+        Scanner scanner = new Scanner(System.in);
+        displayProductTable(pds);
+        System.out.println("Enter the ID of the product you want to delete (or enter 0 to go back): ");
+        int productIdToDelete = scanner.nextInt();
+
+        if (productIdToDelete == 0) {
+            System.out.println("Going back to the main menu.");
+            return;
+        }
+        System.out.println("Are you sure you want to delete this product? (yes/no): ");
+        String confirmation = scanner.next().toLowerCase();
+
+        if (confirmation.equals("yes")) {
+            boolean deletionResult = pds.deleteProduct(productIdToDelete);
+
+            if (deletionResult) {
+                System.out.println("Product deleted successfully.");
+            } else {
+                System.out.println("Failed to delete product.");
+            }
+        } else {
+            System.out.println("Product deletion canceled.");
+        }
+    }
+
+
 }

@@ -1,9 +1,6 @@
 package PDS;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
-import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.List;
 
 public interface ProductDeliverySystem extends Remote {
@@ -12,6 +9,7 @@ public interface ProductDeliverySystem extends Remote {
     boolean loginUser(UserInfoDTO userInfo) throws RemoteException;
 
     boolean isUsernameTaken(UserInfoDTO userInfo) throws RemoteException;
+
 
     //List<String> getCategories() throws RemoteException;
     //List<ProductDTO> getProductsByCategory(String category) throws RemoteException;
@@ -44,4 +42,26 @@ public interface ProductDeliverySystem extends Remote {
     List<OrderDTO> getAllOrdersbyStatus(String status) throws RemoteException;
 
     boolean updateOrderStatus(int selectedOrderId, String orderStatus) throws RemoteException;
+
+    boolean addCategory(CategoryDTO categoryInfo) throws RemoteException;
+
+    boolean updateCategory(CategoryDTO updatedCategory) throws RemoteException;
+
+
+
+    boolean isCategoryNameTaken(CategoryDTO categoryInfo) throws RemoteException;
+
+    CategoryDTO getCategoryInfoById(int categoryId) throws RemoteException;
+
+
+    boolean deleteCategoryServer(int categoryId) throws RemoteException;
+
+    boolean addProducts(ProductDTO productInfo) throws RemoteException;
+
+    boolean updateProduct(ProductDTO updatedProduct) throws RemoteException;
+
+    ProductDTO getProductInfoById(int productId) throws RemoteException;
+
+
+    boolean deleteProduct(int productId) throws RemoteException;
 }
