@@ -5,10 +5,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class ProductDeliverySystemServer extends UnicastRemoteObject implements ProductDeliverySystem {
@@ -30,17 +27,17 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
                 System.out.println("Username already exists. Please choose a different username.");
                 return false;
             }
-
             // If the username is not taken, proceed with the registration
-            String sql = "INSERT INTO users (first_name, last_name, email, phone, address, username, password) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO users (first_name, last_name, IC_Number, email, phone, address, username, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, userInfo.getFirstName());
                 preparedStatement.setString(2, userInfo.getLastName());
-                preparedStatement.setString(3, userInfo.getEmail());
-                preparedStatement.setString(4, userInfo.getPhone());
-                preparedStatement.setString(5, userInfo.getAddress());
-                preparedStatement.setString(6, userInfo.getUsername());
-                preparedStatement.setString(7, userInfo.getPassword());
+                preparedStatement.setString(3, userInfo.getICNumber());
+                preparedStatement.setString(4, userInfo.getEmail());
+                preparedStatement.setString(5, userInfo.getPhone());
+                preparedStatement.setString(6, userInfo.getAddress());
+                preparedStatement.setString(7, userInfo.getUsername());
+                preparedStatement.setString(8, userInfo.getPassword());
 
                 int rowsAffected = preparedStatement.executeUpdate();
 
@@ -99,8 +96,13 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
 
     public static void main(String[] args) {
         try {
+<<<<<<< HEAD
             // Start the RMI registry on port 1098
             //LocateRegistry.createRegistry(1098);
+=======
+            // Start the RMI registry on port 1099
+            //LocateRegistry.createRegistry(1099);
+>>>>>>> bidhanChanges
 
             // Create an instance of your RMI server
             ProductDeliverySystemServer server = new ProductDeliverySystemServer();
@@ -154,6 +156,7 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
                         product.setDescription(resultSet.getString("description"));
                         product.setPrice(resultSet.getDouble("price"));
                         product.setAvailable(resultSet.getInt("quantity_available"));
+                        product.setCategoryId(resultSet.getInt("category_id"));
                         products.add(product);
                     }
                 }
@@ -523,10 +526,11 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
                         user.setId(resultSet.getInt("id"));
                         user.setFirstName(resultSet.getString("first_name"));
                         user.setLastName(resultSet.getString("last_name"));
+                        user.setICNumber(resultSet.getString("IC_Number"));
                         user.setEmail(resultSet.getString("email"));
                         user.setPhone(resultSet.getString("phone"));
+                        user.setAddress(resultSet.getString("address"));
                         user.setUsername(resultSet.getString("username"));
-                        user.setRole(resultSet.getInt("role"));
 
                         users.add(user);
                     }
@@ -559,18 +563,19 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
 
                 if (rowsAffected > 0) {
                     // If deletion from the main table is successful, insert into the deleted_users table
-                    String insertSql = "INSERT INTO deleted_users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    String insertSql = "INSERT INTO deleted_users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     try (PreparedStatement insertStatement = connection.prepareStatement(insertSql)) {
                         if (deletedUser != null) {
                             insertStatement.setInt(1, deletedUser.getId());
                             insertStatement.setString(2, deletedUser.getUsername());
                             insertStatement.setString(3, deletedUser.getFirstName());
                             insertStatement.setString(4, deletedUser.getLastName());
-                            insertStatement.setString(5, deletedUser.getEmail());
-                            insertStatement.setString(6, deletedUser.getPhone());
-                            insertStatement.setString(7, deletedUser.getAddress());
-                            insertStatement.setString(8, deletedUser.getPassword());
-                            insertStatement.setInt(9, deletedUser.getRole());
+                            insertStatement.setString(5, deletedUser.getICNumber());
+                            insertStatement.setString(6, deletedUser.getEmail());
+                            insertStatement.setString(7, deletedUser.getPhone());
+                            insertStatement.setString(8, deletedUser.getAddress());
+                            insertStatement.setString(9, deletedUser.getPassword());
+                            insertStatement.setInt(10, deletedUser.getRole());
 
                             int insertedRows = insertStatement.executeUpdate();
 
@@ -614,6 +619,7 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
                         userInfo.setUsername(resultSet.getString("username"));
                         userInfo.setFirstName(resultSet.getString("first_name"));
                         userInfo.setLastName(resultSet.getString("last_name"));
+                        userInfo.setLastName(resultSet.getString("IC_Number"));
                         userInfo.setEmail(resultSet.getString("email"));
                         userInfo.setPhone(resultSet.getString("phone"));
                         userInfo.setAddress(resultSet.getString("address"));
@@ -642,16 +648,17 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
     public boolean updateUser(UserInfoDTO updatedUser) throws RemoteException {
         try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             // Construct SQL query to update user details
-            String updateSql = "UPDATE users SET first_name=?, last_name=?, email=?, phone=?, username=? WHERE id=?";
+            String updateSql = "UPDATE users SET first_name=?, last_name=?, IC_Number=?, email=?, phone=?, username=? WHERE id=?";
 
             try (PreparedStatement updateStatement = connection.prepareStatement(updateSql)) {
                 // Set parameters for the update query
                 updateStatement.setString(1, updatedUser.getFirstName());
                 updateStatement.setString(2, updatedUser.getLastName());
-                updateStatement.setString(3, updatedUser.getEmail());
-                updateStatement.setString(4, updatedUser.getPhone());
-                updateStatement.setString(5, updatedUser.getUsername());
-                updateStatement.setInt(6, updatedUser.getId());
+                updateStatement.setString(3, updatedUser.getICNumber());
+                updateStatement.setString(4, updatedUser.getEmail());
+                updateStatement.setString(5, updatedUser.getPhone());
+                updateStatement.setString(6, updatedUser.getUsername());
+                updateStatement.setInt(7, updatedUser.getId());
 
                 // Execute the update query
                 int rowsAffected = updateStatement.executeUpdate();
@@ -666,5 +673,279 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
         }
     }
 
+    @Override
+    public boolean addCategory(CategoryDTO categoryInfo) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            if (isCategoryNameTaken(categoryInfo)) {
+                System.out.println("Category name already exists. Please choose a different category name.");
+                return false;
+            }
+            String sql = "INSERT INTO categories (category_name) VALUES (?)";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, categoryInfo.getName());
+                int rowsAffected = preparedStatement.executeUpdate();
+                return rowsAffected > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    @Override
+    public boolean updateCategory(CategoryDTO updatedCategory) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String updateSql = "UPDATE categories SET category_name=? WHERE category_id=?";
+
+            try (PreparedStatement updateStatement = connection.prepareStatement(updateSql)) {
+                updateStatement.setString(1, updatedCategory.getName());
+                updateStatement.setInt(2, updatedCategory.getCategoryId());
+                int rowsAffected = updateStatement.executeUpdate();
+                return rowsAffected > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+
+    public boolean isCategoryNameTaken(CategoryDTO categoryInfo) throws RemoteException {
+        String sql = "SELECT COUNT(*) FROM categories WHERE category_name = ?";
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, categoryInfo.getName());
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    int count = resultSet.getInt(1);
+                    return count > 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+    @Override
+    public CategoryDTO getCategoryInfoById(int categoryId) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "SELECT * FROM categories WHERE category_id = ?";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setInt(1, categoryId);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        CategoryDTO categoryInfo = new CategoryDTO();
+                        categoryInfo.setCategoryId(resultSet.getInt("category_id"));
+                        categoryInfo.setName(resultSet.getString("category_name"));
+                        System.out.println("Retrieved Category Information: " + categoryInfo);
+
+                        return categoryInfo;
+                    } else {
+                        System.out.println("Category not found with ID: " + categoryId);
+                        return null;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+  
+
+    private boolean areProductsInCategory(Connection connection, int categoryId) throws SQLException {
+        String queryProductsSql = "SELECT COUNT(*) FROM products WHERE category_id = ?";
+        try (PreparedStatement queryProductsStatement = connection.prepareStatement(queryProductsSql)) {
+            queryProductsStatement.setInt(1, categoryId);
+            try (ResultSet resultSet = queryProductsStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    int productCount = resultSet.getInt(1);
+                    return productCount > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteCategoryServer(int categoryId) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            if (areProductsInCategory(connection, categoryId)) {
+                System.out.print("There are products associated with this category. Do you want to delete all associated products and the category? (yes/no): ");
+                Scanner scanner = new Scanner(System.in);
+                String userConfirmation = scanner.nextLine().trim().toLowerCase();
+                if (!userConfirmation.equals("yes")) {
+                    System.out.println("Category deletion canceled by user.");
+                    return false;
+                }
+            }
+            String deleteCategorySql = "DELETE FROM categories WHERE category_id = ?";
+            try (PreparedStatement deleteCategoryStatement = connection.prepareStatement(deleteCategorySql)) {
+                deleteCategoryStatement.setInt(1, categoryId);
+                int rowsAffected = deleteCategoryStatement.executeUpdate();
+                if (rowsAffected > 0) {
+                    String insertSql = "INSERT INTO deleted_categories (category_id, category_name) VALUES (?, ?)";
+                    try (PreparedStatement insertStatement = connection.prepareStatement(insertSql)) {
+                        CategoryDTO deletedCategory = getCategoryInfoById(categoryId);
+
+                        if (deletedCategory != null) {
+                            insertStatement.setInt(1, deletedCategory.getCategoryId());
+                            insertStatement.setString(2, deletedCategory.getName());
+                            int insertedRows = insertStatement.executeUpdate();
+                            System.out.println("Rows Inserted: " + insertedRows);
+                            return insertedRows > 0;
+                        } else {
+                            System.out.println("Deleted Category is null");
+                            return false;
+                        }
+                    }
+                } else {
+                    return false;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean addProducts(ProductDTO productInfo) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            // Check if the category exists
+            int categoryId = productInfo.getCategoryId();
+            if (!categoryExists(connection, categoryId)) {
+                System.out.println("Category with ID " + categoryId + " does not exist. Cannot add product.");
+                return false;
+            }
+            String sql = "INSERT INTO products (product_name, description, price, quantity_available, category_id) VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, productInfo.getProductName());
+                preparedStatement.setString(2, productInfo.getDescription());
+                preparedStatement.setDouble(3, productInfo.getPrice());
+                preparedStatement.setInt(4, productInfo.getAvailable());
+                preparedStatement.setInt(5, productInfo.getCategoryId());
+
+                int rowsAffected = preparedStatement.executeUpdate();
+                return rowsAffected > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean categoryExists(Connection connection, int categoryId) throws SQLException {
+        String checkCategorySql = "SELECT * FROM categories WHERE category_id = ?";
+        try (PreparedStatement checkCategoryStatement = connection.prepareStatement(checkCategorySql)) {
+            checkCategoryStatement.setInt(1, categoryId);
+            try (ResultSet resultSet = checkCategoryStatement.executeQuery()) {
+                return resultSet.next();
+            }
+        }
+    }
+
+    @Override
+    public boolean updateProduct(ProductDTO updatedProduct) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String updateSql = "UPDATE products SET product_name=?, description=?, price=?, quantity_available=?, category_id=? WHERE product_id=?";
+            try (PreparedStatement updateStatement = connection.prepareStatement(updateSql)) {
+                updateStatement.setString(1, updatedProduct.getProductName());
+                updateStatement.setString(2, updatedProduct.getDescription());
+                updateStatement.setDouble(3, updatedProduct.getPrice());
+                updateStatement.setInt(4, updatedProduct.getAvailable());
+                updateStatement.setInt(5, updatedProduct.getCategoryId());
+                updateStatement.setInt(6, updatedProduct.getProductId());
+                int rowsAffected = updateStatement.executeUpdate();
+                return rowsAffected > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+            return false;
+        }
+    }
+
+    @Override
+    public ProductDTO getProductInfoById(int productId) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "SELECT * FROM products WHERE product_id = ?";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setInt(1, productId);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        ProductDTO productInfo = new ProductDTO();
+                        productInfo.setProductId(resultSet.getInt("product_id"));
+                        productInfo.setProductName(resultSet.getString("product_name"));
+                        productInfo.setDescription(resultSet.getString("description"));
+                        productInfo.setPrice(resultSet.getDouble("price"));
+                        productInfo.setAvailable(resultSet.getInt("quantity_available"));
+                        productInfo.setCategoryId(resultSet.getInt("category_id"));
+
+
+                        System.out.println("Retrieved Product Information: " + productInfo);
+
+                        return productInfo;
+                    } else {
+
+                        System.out.println("Product not found with ID: " + productId);
+                        return null;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+            return null;
+        }
+    }
+
+    @Override
+    public boolean deleteProduct(int productId) throws RemoteException {
+        try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            ProductDTO deletedProduct = getProductInfoById(productId);
+
+            System.out.println("Deleted Product Information: " + deletedProduct);
+            String deleteSql = "DELETE FROM products WHERE product_id = ?";
+            try (PreparedStatement deleteStatement = connection.prepareStatement(deleteSql)) {
+                deleteStatement.setInt(1, productId);
+
+                int rowsAffected = deleteStatement.executeUpdate();
+
+                if (rowsAffected > 0) {
+                    String insertSql = "INSERT INTO deleted_products (product_id, product_name, description, price, quantity_available, category_id) VALUES (?, ?, ?, ?, ?, ?)";
+                    try (PreparedStatement insertStatement = connection.prepareStatement(insertSql)) {
+                        if (deletedProduct != null) {
+                            insertStatement.setInt(1, deletedProduct.getProductId());
+                            insertStatement.setString(2, deletedProduct.getProductName());
+                            insertStatement.setString(3, deletedProduct.getDescription());
+                            insertStatement.setDouble(4, deletedProduct.getPrice());
+                            insertStatement.setInt(5, deletedProduct.getAvailable());
+                            insertStatement.setInt(6, deletedProduct.getCategoryId());
+
+                            int insertedRows = insertStatement.executeUpdate();
+                            System.out.println("Rows Inserted: " + insertedRows);
+                            return insertedRows > 0;
+                        } else {
+                            System.out.println("Deleted Product is null");
+                            return false;
+                        }
+                    }
+                } else {
+
+                    return false;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+            return false;
+        }
+    }
 
 }
+
