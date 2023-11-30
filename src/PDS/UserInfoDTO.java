@@ -20,8 +20,15 @@ public class UserInfoDTO implements Serializable {
     private String password;
     private int id;
     private int role;
-    private String icnumber;
+    private String icNumber;
 
+    public String getICNumber() {
+        return icNumber;
+    }
+
+    public void setICNumber(String icNumber) {
+        this.icNumber = icNumber;
+    }
     public void setId(int id) {
         this.id = id;
     }
@@ -49,7 +56,7 @@ public class UserInfoDTO implements Serializable {
     public UserInfoDTO(String firstName, String lastName,String ICNumber, String email, String phone, String address, String username, String password) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.icnumber =ICNumber;
+        this.icNumber =ICNumber;
         this.email = email;
         this.phone = phone;
         this.address = address;
@@ -65,10 +72,6 @@ public class UserInfoDTO implements Serializable {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public void setICNumber(String ICNumber) {
-        this.icnumber = ICNumber;
     }
 
 
@@ -100,9 +103,6 @@ public class UserInfoDTO implements Serializable {
 
     public String getLastName() {
         return lastName;
-    }
-    public String getICNumber() {
-        return icnumber;
     }
 
 
@@ -419,17 +419,10 @@ public class UserInfoDTO implements Serializable {
             System.out.println("\nAdmin User Management - View Users:");
 
             // Retrieve users from the database
-            List<UserInfoDTO> users = pds.getAllUsers();
+            //List<UserInfoDTO> users = pds.getAllUsers();
 
             // Display users in tabular format
-            System.out.printf("%-5s %-15s %-15s %-15s %-30s %-15s %-15s %-15s\n",
-                    "ID", "First Name", "Last Name", "IC_Number", "Email", "Phone", "Address", "Username");
-            System.out.println("-----------------------------------------------------------------------------------------------------------------");
-            for (UserInfoDTO user : users) {
-                System.out.printf("%-5s %-15s %-15s %-15s %-30s %-15s %-15s %-15s\n",
-                        user.getId(), user.getFirstName(), user.getLastName(), user.getICNumber(), user.getEmail(),
-                        user.getPhone(), user.getAddress(), user.getUsername());
-            }
+            displayUserTable(pds);
 
             System.out.println("-----------------------------------------------------------------------------------------------------------------");
 
@@ -495,12 +488,14 @@ public class UserInfoDTO implements Serializable {
                     "ID", "First Name", "Last Name", "IC_Number", "Email", "Phone", "Address", "Username");
             System.out.println("-----------------------------------------------------------------------------------------------------------------");
             for (UserInfoDTO user : users) {
-                System.out.printf("%-5d %-15s %-15s %-30s %-15s %-15s %-15s\n",
-                        user.getId(), user.getFirstName(), user.getICNumber(), user.getEmail(),
-                        user.getPhone(), user.getAddress(), user.getUsername());
+                System.out.printf("%-5d %-15s %-15s %-15s %-30s %-15s %-15s %-15s\n",
+                        user.getId(), user.getFirstName(), user.getLastName(), user.getICNumber(),
+                        user.getEmail(), user.getPhone(), user.getAddress(), user.getUsername());
             }
+
         }
     }
+
 
 
     private static void updateUser(ProductDeliverySystem pds) throws RemoteException {

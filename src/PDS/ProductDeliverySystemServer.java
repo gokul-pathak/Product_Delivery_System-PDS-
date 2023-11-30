@@ -27,7 +27,6 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
                 System.out.println("Username already exists. Please choose a different username.");
                 return false;
             }
-
             // If the username is not taken, proceed with the registration
             String sql = "INSERT INTO users (first_name, last_name, IC_Number, email, phone, address, username, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -520,8 +519,8 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
                         UserInfoDTO user = new UserInfoDTO();
                         user.setId(resultSet.getInt("id"));
                         user.setFirstName(resultSet.getString("first_name"));
-                        //user.setLastName(resultSet.getString("last_name"));
-                        user.setLastName(resultSet.getString("IC_Number"));
+                        user.setLastName(resultSet.getString("last_name"));
+                        user.setICNumber(resultSet.getString("IC_Number"));
                         user.setEmail(resultSet.getString("email"));
                         user.setPhone(resultSet.getString("phone"));
                         user.setAddress(resultSet.getString("address"));
