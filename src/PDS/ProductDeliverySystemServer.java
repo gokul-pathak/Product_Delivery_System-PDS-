@@ -96,13 +96,10 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
 
     public static void main(String[] args) {
         try {
-<<<<<<< HEAD
             // Start the RMI registry on port 1098
             //LocateRegistry.createRegistry(1098);
-=======
             // Start the RMI registry on port 1099
             //LocateRegistry.createRegistry(1099);
->>>>>>> bidhanChanges
 
             // Create an instance of your RMI server
             ProductDeliverySystemServer server = new ProductDeliverySystemServer();
