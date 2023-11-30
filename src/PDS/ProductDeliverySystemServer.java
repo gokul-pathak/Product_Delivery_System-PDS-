@@ -3,6 +3,7 @@ package PDS;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.ExportException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 import java.util.*;
@@ -97,25 +98,26 @@ public class ProductDeliverySystemServer extends UnicastRemoteObject implements 
     public static void main(String[] args) {
         try {
             // Start the RMI registry on port 1098
-            //LocateRegistry.createRegistry(1098);
-            // Start the RMI registry on port 1099
-            //LocateRegistry.createRegistry(1099);
+            // Try to listen the RMI registry on port 1099
+            Registry registry = LocateRegistry.getRegistry(1099);
 
             // Create an instance of your RMI server
             ProductDeliverySystemServer server = new ProductDeliverySystemServer();
 
             // Bind the server to the registry with the name "PDS"
-            Registry registry = LocateRegistry.getRegistry(1099);
             registry.rebind("PDS", server);
 
             System.out.println("Server ready.");
 
             // You might want to add some code here to keep the server running,
             // for example, waiting for user input or using a loop.
-
-        } catch (Exception e) {
-            System.err.println("Server exception: " + e.toString());
-            e.printStackTrace();
+        }  catch (Exception e) {
+            if (e instanceof java.rmi.ConnectException) {
+                System.err.println("Custom Error: Access Denied - Unable to connect to the RMI registry.");
+            } else {
+                System.err.println("Server exception: " + e.toString());
+                e.printStackTrace();
+            }
         }
     }
 
